@@ -40,6 +40,51 @@ export type TrekEvent = {
   text: string
 }
 
+export type CommunityPost = {
+  id: string
+  authorId: string
+  handle: string
+  title: string
+  likes: string
+  image: string
+}
+
+export type ExplorerProfile = {
+  id: string
+  name: string
+  handle: string
+  avatar: string
+  cover: string
+  location: string
+  bio: string
+  level: string
+  stats: {
+    treks: string
+    posts: string
+    saved: string
+  }
+  favoriteTrails: string[]
+  recentPosts: CommunityPost[]
+}
+
+export type OrganizerProfile = {
+  id: string
+  name: string
+  handle: string
+  avatar: string
+  cover: string
+  location: string
+  bio: string
+  verifiedSince: string
+  specialty: string
+  stats: {
+    events: string
+    hikers: string
+    rating: string
+  }
+  upcomingEvents: TrekEvent[]
+}
+
 export type CssVars = CSSProperties & {
   '--bg'?: string
 }

@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
-import type { Trail, TrekEvent } from '../types'
+import type { CommunityPost, Trail, TrekEvent } from '../types'
 import { bgStyle } from '../utils/style'
 
 export function OverlayTrail({ trail }: { trail: Trail }) {
@@ -86,24 +86,19 @@ export function Section({
   )
 }
 
-export function PostPreview({
-  handle,
-  title,
-  likes,
-  image,
-}: {
-  handle: string
-  title: string
-  likes: string
-  image: string
-}) {
+export function PostPreview({ post }: { post: CommunityPost }) {
+  const authorPath =
+    post.authorId === 'mandalay-treks'
+      ? `/organizers/${post.authorId}`
+      : `/profiles/${post.authorId}`
+
   return (
     <article className="post-preview">
-      <img src={image} alt={title} />
+      <img src={post.image} alt={post.title} />
       <div>
-        <span>{handle}</span>
-        <h3>{title}</h3>
-        <p>{likes}</p>
+        <Link to={authorPath}>{post.handle}</Link>
+        <h3>{post.title}</h3>
+        <p>{post.likes}</p>
         <button type="button" aria-label="Like">
           ♡
         </button>

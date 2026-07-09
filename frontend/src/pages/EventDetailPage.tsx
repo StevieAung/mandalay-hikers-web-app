@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
+import ShieldCheck from 'reicon-react/icons/ShieldCheck'
 import { Panel, Stat } from '../components/Cards'
 import { Footer } from '../components/Footer'
 import { IMG } from '../data/mockData'
@@ -27,12 +29,13 @@ export default function EventDetailPage() {
           </div>
           <div className="organizer-strip">
             <img src={IMG.guide} alt="Organizer" />
-            <div>
+            <Link to="/organizers/mandalay-treks">
               <span>Organizer</span>
               <strong>Thurein Lynn</strong>
-            </div>
+            </Link>
             <p>
-              <span className="material-symbols-outlined">verified</span>Expert Navigator
+              <ShieldCheck size={20} weight="Filled" />
+              Expert Navigator
             </p>
           </div>
           <h2 className="section-title">Trek Overview</h2>

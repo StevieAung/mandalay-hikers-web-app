@@ -1,4 +1,4 @@
-import type { Trail, TrekEvent } from '../types'
+import type { CommunityPost, ExplorerProfile, OrganizerProfile, Trail, TrekEvent } from '../types'
 
 export const IMG = {
   hero: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCpsZ2K9gX4WWURSOBRpzH_4DiTRDaSr-ExuQAcji2YDERZI2T5ieyMMeeAkp_6DNdUOzHo_zDMRrlVPcA5EGHeHfIw7RhiAiZy7-FLwnG2S__O4aXkzcsc3ge6lVndSXzIINrdrheOhdrxKqXZoHZzd77jesfwZtaJPuWvdmxT4lfxep2hK0LHlxQFGZO_hQfZkcoY6pS6ZKKe47-wa9pzR1ECd4O9d10fIOAQOR23e59yKuiwRkdAWY-9K0cxlcmJ_3DMiqXc_AYV',
@@ -174,9 +174,95 @@ export const events: TrekEvent[] = [
   },
 ]
 
-export const communityPosts = [
-  ['@kyaw_hiker', 'Essential gear for the rainy season...', '32 likes', IMG.boots],
-  ['@mandalay_treks', 'Lunch with the Yankin crew today!', '54 likes', IMG.lunch],
-  ['@star_trekker', 'Night skies over the Ridge...', '108 likes', IMG.stars],
-  ['@trail_master', 'Planning the next big expedition.', '19 likes', IMG.topoTable],
-] as const
+export const communityPosts: CommunityPost[] = [
+  {
+    id: 'rainy-gear',
+    authorId: 'kyaw-hiker',
+    handle: '@kyaw_hiker',
+    title: 'Essential gear for the rainy season...',
+    likes: '32 likes',
+    image: IMG.boots,
+  },
+  {
+    id: 'yankin-lunch',
+    authorId: 'mandalay-treks',
+    handle: '@mandalay_treks',
+    title: 'Lunch with the Yankin crew today!',
+    likes: '54 likes',
+    image: IMG.lunch,
+  },
+  {
+    id: 'night-skies',
+    authorId: 'star-trekker',
+    handle: '@star_trekker',
+    title: 'Night skies over the Ridge...',
+    likes: '108 likes',
+    image: IMG.stars,
+  },
+  {
+    id: 'next-expedition',
+    authorId: 'trail-master',
+    handle: '@trail_master',
+    title: 'Planning the next big expedition.',
+    likes: '19 likes',
+    image: IMG.topoTable,
+  },
+]
+
+export const explorerProfiles: ExplorerProfile[] = [
+  {
+    id: 'kyaw-hiker',
+    name: 'Kyaw Hein',
+    handle: '@kyaw_hiker',
+    avatar: IMG.avatar,
+    cover: IMG.boots,
+    location: 'Chanayethazan, Mandalay',
+    bio: 'Weekend explorer focused on practical gear, wet-season prep, and beginner-friendly Mandalay routes.',
+    level: 'Explorer',
+    stats: { treks: '24', posts: '12', saved: '18' },
+    favoriteTrails: ['Yankin Ridge Path', 'Irrawaddy Bank Run', 'Old Hill Station Road'],
+    recentPosts: communityPosts.filter((post) => post.authorId === 'kyaw-hiker'),
+  },
+  {
+    id: 'star-trekker',
+    name: 'Thiri Mon',
+    handle: '@star_trekker',
+    avatar: IMG.stars,
+    cover: IMG.stars,
+    location: 'Aungmyaythazan, Mandalay',
+    bio: 'Night-sky photographer and quiet-route explorer documenting low-light hikes and sunrise descents.',
+    level: 'Explorer',
+    stats: { treks: '31', posts: '19', saved: '27' },
+    favoriteTrails: ['Mandalay Peak Loop', 'Dat Taw Guaint Fall', 'Yankin Ridge Path'],
+    recentPosts: communityPosts.filter((post) => post.authorId === 'star-trekker'),
+  },
+  {
+    id: 'trail-master',
+    name: 'Aung Min',
+    handle: '@trail_master',
+    avatar: IMG.topoTable,
+    cover: IMG.topoTable,
+    location: 'Pyigyidagun, Mandalay',
+    bio: 'Route planner collecting field notes, elevation estimates, and local access tips before every group trek.',
+    level: 'Explorer',
+    stats: { treks: '42', posts: '21', saved: '34' },
+    favoriteTrails: ['Elephant Ridge Peak', 'Old Hill Station Road', 'Mandalay Peak Loop'],
+    recentPosts: communityPosts.filter((post) => post.authorId === 'trail-master'),
+  },
+]
+
+export const organizerProfiles: OrganizerProfile[] = [
+  {
+    id: 'mandalay-treks',
+    name: 'Mandalay Treks',
+    handle: '@mandalay_treks',
+    avatar: IMG.guide,
+    cover: IMG.eventHero,
+    location: 'Mandalay Region',
+    bio: 'Verified local organizer leading small-group dawn hikes, cleanup treks, and practical trail workshops.',
+    verifiedSince: '2024',
+    specialty: 'Beginner-safe group treks',
+    stats: { events: '36', hikers: '428', rating: '4.9' },
+    upcomingEvents: events.slice(0, 3),
+  },
+]

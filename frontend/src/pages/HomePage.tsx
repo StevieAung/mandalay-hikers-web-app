@@ -64,8 +64,8 @@ export default function HomePage() {
       </section>
       <Section title="From the Community" action="Explore forum ->" actionTo="/community">
         <div className="community-grid">
-          {communityPosts.map(([handle, title, likes, image]) => (
-            <PostPreview key={title} handle={handle} title={title} likes={likes} image={image} />
+          {communityPosts.map((post) => (
+            <PostPreview key={post.id} post={post} />
           ))}
         </div>
       </Section>

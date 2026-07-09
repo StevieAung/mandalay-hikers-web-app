@@ -1,4 +1,8 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
+import MessageDots from 'reicon-react/icons/MessageDots'
+import ShieldCheck from 'reicon-react/icons/ShieldCheck'
+import User from 'reicon-react/icons/User'
 import { Footer } from '../components/Footer'
 import { communityPosts } from '../data/mockData'
 
@@ -26,25 +30,41 @@ export default function CommunityPage() {
             </button>
           </form>
           <div className="dispatch-list">
-            {communityPosts.map(([handle, title, likes, image]) => (
-              <article className="dispatch-card" key={title}>
-                <img src={image} alt={title} />
-                <div>
-                  <span className="label">{handle}</span>
-                  <h3>{title}</h3>
-                  <p>
-                    Practical field notes from recent Mandalay hikes, focused on terrain, safety,
-                    and timing.
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => setLiked({ ...liked, [title]: !liked[title] })}
-                  >
-                    {liked[title] ? 'Saved' : likes}
-                  </button>
-                </div>
-              </article>
-            ))}
+            {communityPosts.map((post) => {
+              const isOrganizer = post.authorId === 'mandalay-treks'
+              const authorPath = isOrganizer
+                ? `/organizers/${post.authorId}`
+                : `/profiles/${post.authorId}`
+
+              return (
+                <article className="dispatch-card" key={post.id}>
+                  <img src={post.image} alt={post.title} />
+                  <div>
+                    <Link className="profile-link" to={authorPath}>
+                      {isOrganizer ? <ShieldCheck size={18} /> : <User size={18} />}
+                      {post.handle}
+                    </Link>
+                    <h3>{post.title}</h3>
+                    <p>
+                      Practical field notes from recent Mandalay hikes, focused on terrain, safety,
+                      and timing.
+                    </p>
+                    <div className="dispatch-actions">
+                      <Link to={authorPath}>
+                        <MessageDots size={18} />
+                        View profile
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={() => setLiked({ ...liked, [post.title]: !liked[post.title] })}
+                      >
+                        {liked[post.title] ? 'Saved' : post.likes}
+                      </button>
+                    </div>
+                  </div>
+                </article>
+              )
+            })}
           </div>
         </div>
       </section>

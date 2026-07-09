@@ -9,6 +9,7 @@
 .env
 .env.*
 !.env.example
+SEED_DATA.md
 
 # Logs
 *.log

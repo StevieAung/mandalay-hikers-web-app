@@ -10,9 +10,11 @@ import CreateEventPage from './pages/CreateEventPage'
 import EventDetailPage from './pages/EventDetailPage'
 import EventsPage from './pages/EventsPage'
 import ExplorerDashboardPage from './pages/ExplorerDashboardPage'
+import ExplorerProfilePage from './pages/ExplorerProfilePage'
 import HomePage from './pages/HomePage'
 import OrganizerApplicationPage from './pages/OrganizerApplicationPage'
 import OrganizerDashboardPage from './pages/OrganizerDashboardPage'
+import OrganizerProfilePage from './pages/OrganizerProfilePage'
 import TrailDetailPage from './pages/TrailDetailPage'
 import TrailDiscoveryPage from './pages/TrailDiscoveryPage'
 
@@ -28,6 +30,8 @@ function App() {
             <Route path="/events" element={<EventsPage />} />
             <Route path="/events/:id" element={<EventDetailPage />} />
             <Route path="/community" element={<CommunityPage />} />
+            <Route path="/profiles/:id" element={<ExplorerProfilePage />} />
+            <Route path="/organizers/:id" element={<OrganizerProfilePage />} />
           </Route>
           <Route path="/login" element={<AuthPage mode="login" />} />
           <Route path="/register" element={<AuthPage mode="register" />} />
