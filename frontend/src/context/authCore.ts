@@ -9,7 +9,7 @@ export type RegisterInput = {
 export type AuthContextValue = {
   user: User | null
   applications: OrganizerApplication[]
-  login: (email: string) => void
+  login: (email: string) => User['role']
   register: (input: RegisterInput) => void
   logout: () => void
   applyForOrganizer: (reason: string) => void

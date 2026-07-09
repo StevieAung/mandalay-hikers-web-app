@@ -1,20 +1,21 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { IMG } from '../data/mockData'
+import { dashboardPathForRole } from '../utils/routes'
 import { bgStyle } from '../utils/style'
 import type { UserRole } from '../types'
 
 export function Sidebar({ active }: { active: UserRole }) {
   const nav = [
-    ['explorer', '/dashboard', 'explore', 'Explorer'],
-    ['organizer', '/organizer', 'event_note', 'Organizer'],
-    ['admin', '/admin', 'admin_panel_settings', 'Admin'],
+    ['explorer', '/explorer-dashboard', 'explore', 'Explorer'],
+    ['organizer', '/organizer-dashboard', 'event_note', 'Organizer'],
+    ['admin', '/admin-dashboard', 'admin_panel_settings', 'Admin'],
   ] as const
 
   return (
     <aside className="portal-sidebar">
       <div>
-        <Link className="portal-logo" to={active === 'admin' ? '/admin' : '/dashboard'}>
+        <Link className="portal-logo" to={dashboardPathForRole(active)}>
           {active === 'admin' ? 'Mandalay' : active === 'explorer' ? 'Mandalay Trails' : 'Hikers'}
         </Link>
         <p>Management Portal</p>

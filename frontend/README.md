@@ -39,11 +39,13 @@ If Vite chooses another port, use the URL shown in the terminal.
 - `/community` community feed
 - `/login` login
 - `/register` register
-- `/dashboard` explorer dashboard
+- `/explorer-dashboard` explorer dashboard
 - `/organizer/apply` organizer application
-- `/organizer` organizer dashboard
+- `/organizer-dashboard` organizer dashboard
 - `/organizer/events/new` create event
-- `/admin` admin dashboard
+- `/admin` admin login entry
+- `/admin-login` admin login
+- `/admin-dashboard` admin dashboard
 
 ## Checks
 

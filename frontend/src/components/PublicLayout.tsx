@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { Link, NavLink, Outlet } from 'react-router-dom'
 import AngleDown2 from 'reicon-react/icons/AngleDown2'
+import ShieldCheck from 'reicon-react/icons/ShieldCheck'
 import User from 'reicon-react/icons/User'
 import { useAuth } from '../context/useAuth'
+import { dashboardPathForRole } from '../utils/routes'
 
 export function PublicLayout() {
   return (
@@ -14,16 +16,18 @@ export function PublicLayout() {
 }
 
 function Header() {
-  const { user, logout } = useAuth()
+  const { user, applications, logout } = useAuth()
   const [open, setOpen] = useState(false)
-  const portalPath =
-    user?.role === 'admin' ? '/admin' : user?.role === 'organizer' ? '/organizer' : '/dashboard'
+  const portalPath = user ? dashboardPathForRole(user.role) : '/login'
   const profilePath =
     user?.role === 'organizer'
       ? '/organizers/mandalay-treks'
       : user?.role === 'explorer'
         ? '/profiles/kyaw-hiker'
         : null
+  const organizerApplication = applications.find((application) => application.email === user?.email)
+  const isVerifiedOrganizer =
+    user?.role === 'organizer' || organizerApplication?.status === 'approved'
 
   return (
     <header className="site-header">
@@ -58,7 +62,19 @@ function Header() {
               <span>{user.name}</span>
               {profilePath && <Link to={profilePath}>Profile</Link>}
               <Link to={portalPath}>Dashboard</Link>
-              {user.role === 'explorer' && <Link to="/organizer/apply">Organizer Application</Link>}
+              {(user.role === 'explorer' || user.role === 'organizer') && (
+                <Link
+                  className={isVerifiedOrganizer ? 'verified-menu-item' : ''}
+                  to="/organizer/apply"
+                >
+                  {isVerifiedOrganizer && <ShieldCheck size={18} weight="Filled" />}
+                  {isVerifiedOrganizer
+                    ? 'Organizer Verified'
+                    : organizerApplication?.status === 'pending'
+                      ? 'Application Pending'
+                      : 'Organizer Application'}
+                </Link>
+              )}
               <button type="button" onClick={logout}>
                 Logout
               </button>

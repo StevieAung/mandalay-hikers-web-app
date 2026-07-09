@@ -4,6 +4,7 @@ import { ProtectedRoute } from './components/ProtectedRoute'
 import { PublicLayout } from './components/PublicLayout'
 import { AuthProvider } from './context/AuthContext'
 import AdminDashboardPage from './pages/AdminDashboardPage'
+import AdminEntryPage from './pages/AdminEntryPage'
 import AuthPage from './pages/AuthPage'
 import CommunityPage from './pages/CommunityPage'
 import CreateEventPage from './pages/CreateEventPage'
@@ -36,9 +37,9 @@ function App() {
           <Route path="/login" element={<AuthPage mode="login" />} />
           <Route path="/register" element={<AuthPage mode="register" />} />
           <Route
-            path="/dashboard"
+            path="/explorer-dashboard"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute roles={['explorer']}>
                 <ExplorerDashboardPage />
               </ProtectedRoute>
             }
@@ -52,9 +53,9 @@ function App() {
             }
           />
           <Route
-            path="/organizer"
+            path="/organizer-dashboard"
             element={
-              <ProtectedRoute roles={['organizer', 'admin']}>
+              <ProtectedRoute roles={['organizer']}>
                 <OrganizerDashboardPage />
               </ProtectedRoute>
             }
@@ -67,14 +68,18 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route path="/admin" element={<AdminEntryPage />} />
+          <Route path="/admin-login" element={<AdminEntryPage />} />
           <Route
-            path="/admin"
+            path="/admin-dashboard"
             element={
-              <ProtectedRoute roles={['admin']}>
+              <ProtectedRoute roles={['admin']} loginPath="/admin-login">
                 <AdminDashboardPage />
               </ProtectedRoute>
             }
           />
+          <Route path="/dashboard" element={<Navigate to="/explorer-dashboard" replace />} />
+          <Route path="/organizer" element={<Navigate to="/organizer-dashboard" replace />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AuthProvider>

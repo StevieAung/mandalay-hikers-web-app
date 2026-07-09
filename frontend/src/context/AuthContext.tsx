@@ -39,6 +39,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         name: role === 'admin' ? 'Zaw Min' : role === 'organizer' ? 'Mandalay Trails' : 'Aung Kyaw',
         role,
       })
+      return role
     },
     [applications],
   )

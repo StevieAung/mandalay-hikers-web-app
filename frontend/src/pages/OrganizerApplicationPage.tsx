@@ -39,7 +39,10 @@ export default function OrganizerApplicationPage() {
               : 'Admin accounts can approve organizers.'}
           </h2>
           <p>Use the correct dashboard for your role to continue managing the platform.</p>
-          <Link className="button cta" to={user?.role === 'admin' ? '/admin' : '/organizer'}>
+          <Link
+            className="button cta"
+            to={user?.role === 'admin' ? '/admin-dashboard' : '/organizer-dashboard'}
+          >
             Open Dashboard
           </Link>
         </article>
@@ -47,7 +50,7 @@ export default function OrganizerApplicationPage() {
         <article className="dark-callout">
           <h2>Application {application.status}</h2>
           <p>{application.reason}</p>
-          <Link className="button cta" to="/dashboard">
+          <Link className="button cta" to="/explorer-dashboard">
             Back to Explorer Dashboard
           </Link>
         </article>

@@ -33,16 +33,16 @@ The API runs at `http://localhost:8000/api`.
 Seeded accounts all use password `password`:
 
 - `admin@mandalayhikes.test`
-- `organizer@mandalayhikes.test`
-- `explorer@mandalayhikes.test`
+- `verified.organizer@mandalayhikes.test`
+- `explorer.min@mandalayhikes.test`
 
 ## Frontend Setup
 
 ```bash
 cd frontend
 cp .env.example .env
-npm install
-npm run dev
+pnpm install
+pnpm dev
 ```
 
 The frontend runs at `http://localhost:5173`.
@@ -71,6 +71,6 @@ Frontend:
 
 ```bash
 cd frontend
-npm run lint
-npm run build
+pnpm lint
+pnpm build
 ```

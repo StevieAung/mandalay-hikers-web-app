@@ -4,15 +4,29 @@ import { Field } from '../components/FormField'
 import { useAuth } from '../context/useAuth'
 import { IMG } from '../data/mockData'
 import type { AuthMode } from '../types'
+import { dashboardPathForRole } from '../utils/routes'
 import { bgStyle } from '../utils/style'
 
-export default function AuthPage({ mode }: { mode: AuthMode }) {
+type AuthPageProps = {
+  mode: AuthMode
+  defaultEmail?: string
+  redirectTo?: string | null
+  intent?: 'public' | 'admin'
+}
+
+export default function AuthPage({
+  mode,
+  defaultEmail = 'explorer.min@mandalayhikes.test',
+  redirectTo = null,
+  intent = 'public',
+}: AuthPageProps) {
   const isRegister = mode === 'register'
+  const isAdminLogin = intent === 'admin'
   const navigate = useNavigate()
   const { login, register } = useAuth()
   const [form, setForm] = useState({
     name: '',
-    email: 'explorer@mandalay.trail',
+    email: defaultEmail,
     password: 'password',
   })
 
@@ -20,10 +34,11 @@ export default function AuthPage({ mode }: { mode: AuthMode }) {
     event.preventDefault()
     if (isRegister) {
       register({ name: form.name, email: form.email })
+      navigate(redirectTo ?? '/explorer-dashboard')
     } else {
-      login(form.email)
+      const role = login(form.email)
+      navigate(redirectTo ?? dashboardPathForRole(role))
     }
-    navigate('/dashboard')
   }
 
   return (
@@ -31,8 +46,10 @@ export default function AuthPage({ mode }: { mode: AuthMode }) {
       <section className="auth-form-side">
         <form className="auth-form" onSubmit={submit}>
           <div className="auth-heading">
-            <span>{isRegister ? 'Join the' : 'Welcome'}</span>
-            <strong>{isRegister ? 'Trail Network.' : 'Back Trekker.'}</strong>
+            <span>{isRegister ? 'Join the' : isAdminLogin ? 'Admin' : 'Welcome'}</span>
+            <strong>
+              {isRegister ? 'Trail Network.' : isAdminLogin ? 'Command Login.' : 'Back Trekker.'}
+            </strong>
           </div>
           {isRegister && (
             <Field
@@ -54,22 +71,30 @@ export default function AuthPage({ mode }: { mode: AuthMode }) {
             aside="Forgot?"
           />
           <button className="button cta wide" type="submit">
-            {isRegister ? 'Create Explorer Account' : 'Sign In'}
+            {isRegister
+              ? 'Create Explorer Account'
+              : isAdminLogin
+                ? 'Enter Admin Panel'
+                : 'Sign In'}
           </button>
-          <div className="auth-divider">Or coordinate via</div>
-          <div className="social-row">
-            <button type="button">Google</button>
-            <button type="button">GitHub</button>
-          </div>
-          <p className="auth-switch">
-            {isRegister ? 'Already trail ready?' : 'New to the trails?'}{' '}
-            <Link to={isRegister ? '/login' : '/register'}>
-              {isRegister ? 'Sign In' : 'Create an Account'}
-            </Link>
-          </p>
+          {!isAdminLogin && (
+            <>
+              <div className="auth-divider">Or coordinate via</div>
+              <div className="social-row">
+                <button type="button">Google</button>
+                <button type="button">GitHub</button>
+              </div>
+              <p className="auth-switch">
+                {isRegister ? 'Already trail ready?' : 'New to the trails?'}{' '}
+                <Link to={isRegister ? '/login' : '/register'}>
+                  {isRegister ? 'Sign In' : 'Create an Account'}
+                </Link>
+              </p>
+            </>
+          )}
         </form>
         <footer className="auth-meta">
-          <span>Explorer by default</span>
+          <span>{isAdminLogin ? 'Admin access only' : 'Explorer by default'}</span>
           <span>Mandalay Region</span>
         </footer>
       </section>
@@ -81,7 +106,9 @@ export default function AuthPage({ mode }: { mode: AuthMode }) {
           <span>Rugged.</span>
           <strong>Reliable.</strong>
           <p>
-            Register as an explorer, then apply for organizer approval when you are ready to lead.
+            {isAdminLogin
+              ? 'Review organizer applications, moderate community content, and manage Mandalay trails from one command view.'
+              : 'Register as an explorer, then apply for organizer approval when you are ready to lead.'}
           </p>
           <small>Trail Ready</small>
         </div>

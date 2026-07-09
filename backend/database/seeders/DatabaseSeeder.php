@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Event;
+use App\Models\OrganizerApplication;
 use App\Models\Post;
 use App\Models\Trail;
 use App\Models\User;
@@ -26,23 +27,32 @@ class DatabaseSeeder extends Seeder
             'role' => 'admin',
         ]);
 
-        $organizer = User::factory()->create([
-            'name' => 'Organizer Aung',
-            'email' => 'organizer@mandalayhikes.test',
+        $verifiedOrganizer = User::factory()->create([
+            'name' => 'May Thu Verified',
+            'email' => 'verified.organizer@mandalayhikes.test',
             'password' => Hash::make('password'),
             'role' => 'organizer',
         ]);
 
         $explorer = User::factory()->create([
-            'name' => 'Explorer May',
-            'email' => 'explorer@mandalayhikes.test',
+            'name' => 'Ko Min Explorer',
+            'email' => 'explorer.min@mandalayhikes.test',
             'password' => Hash::make('password'),
             'role' => 'explorer',
         ]);
 
-        foreach ([$admin, $organizer, $explorer] as $user) {
+        foreach ([$admin, $verifiedOrganizer, $explorer] as $user) {
             $user->profile()->create(['location' => 'Mandalay', 'bio' => 'Weekend hiker exploring Mandalay region trails.']);
         }
+
+        OrganizerApplication::create([
+            'user_id' => $verifiedOrganizer->id,
+            'reason' => 'Experienced weekend hiker ready to lead safe beginner-friendly Mandalay treks.',
+            'status' => 'approved',
+            'reviewed_by' => $admin->id,
+            'review_note' => 'Approved as a verified organizer for seeded testing.',
+            'reviewed_at' => now(),
+        ]);
 
         $trails = collect([
             [
@@ -84,7 +94,7 @@ class DatabaseSeeder extends Seeder
         ])->map(fn ($trail) => Trail::create($trail));
 
         Event::create([
-            'organizer_id' => $organizer->id,
+            'organizer_id' => $verifiedOrganizer->id,
             'trail_id' => $trails[0]->id,
             'title' => 'Saturday Sunrise Walk',
             'destination' => 'Mandalay Hill',
@@ -97,7 +107,7 @@ class DatabaseSeeder extends Seeder
         ]);
 
         Event::create([
-            'organizer_id' => $organizer->id,
+            'organizer_id' => $verifiedOrganizer->id,
             'trail_id' => $trails[1]->id,
             'title' => 'Dee Dote Cool Water Day',
             'destination' => 'Dee Dote Waterfall',

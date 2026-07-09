@@ -17,7 +17,7 @@ export default function CreateEventPage() {
         className="create-form"
         onSubmit={(event) => {
           event.preventDefault()
-          navigate('/organizer')
+          navigate('/organizer-dashboard')
         }}
       >
         <Field
