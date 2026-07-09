@@ -1,0 +1,55 @@
+@import 'tailwindcss';
+
+:root {
+  --canvas: #faf9f4;
+  --surface: #ffffff;
+  --surface-low: #f5f4ef;
+  --surface-high: #e9e8e3;
+  --fog: #e3e3de;
+  --outline: #727973;
+  --outline-variant: #c2c8c2;
+  --ink: #1b1c19;
+  --stone: #424844;
+  --forest: #193326;
+  --moss: #496455;
+  --orange: #fca151;
+  --burnt: #914d00;
+  --error: #ba1a1a;
+  --tertiary: #2b302a;
+  --display: 'Space Grotesk', system-ui, sans-serif;
+  --body: 'Work Sans', system-ui, sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, monospace;
+  color: var(--ink);
+  font-family: var(--body);
+  font-synthesis: none;
+  letter-spacing: 0;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--canvas);
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--canvas);
+  margin: 0;
+  min-width: 320px;
+}
+
+button,
+input,
+textarea,
+select {
+  letter-spacing: 0;
+}
+
+img {
+  max-width: 100%;
+}
