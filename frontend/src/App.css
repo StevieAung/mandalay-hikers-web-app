@@ -154,6 +154,21 @@ a {
   color: var(--burnt);
 }
 
+.user-menu-panel .current-menu-item {
+  background: var(--surface-low);
+  color: var(--burnt);
+}
+
+.user-menu-panel a b {
+  border: 1px solid var(--orange);
+  color: var(--burnt);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  margin-left: auto;
+  padding: 4px 6px;
+}
+
 .button,
 .icon-button {
   align-items: center;

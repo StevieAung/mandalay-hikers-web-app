@@ -44,8 +44,6 @@ If Vite chooses another port, use the URL shown in the terminal.
 - `/organizer-dashboard` organizer dashboard
 - `/organizer/events/new` create event
 - `/admin` admin login entry
-- `/admin-login` admin login
-- `/admin-dashboard` admin dashboard
 
 ## Checks
 

@@ -4,13 +4,16 @@ import { IMG } from '../data/mockData'
 import { dashboardPathForRole } from '../utils/routes'
 import { bgStyle } from '../utils/style'
 import type { UserRole } from '../types'
+import { Footer } from './Footer'
+import { Header } from './PublicLayout'
 
 export function Sidebar({ active }: { active: UserRole }) {
-  const nav = [
-    ['explorer', '/explorer-dashboard', 'explore', 'Explorer'],
-    ['organizer', '/organizer-dashboard', 'event_note', 'Organizer'],
-    ['admin', '/admin-dashboard', 'admin_panel_settings', 'Admin'],
-  ] as const
+  const navByRole = {
+    explorer: [['explorer', '/explorer-dashboard', 'explore', 'Explorer']],
+    organizer: [['organizer', '/organizer-dashboard', 'event_note', 'Organizer']],
+    admin: [['admin', '/admin', 'admin_panel_settings', 'Admin']],
+  } as const
+  const nav = navByRole[active]
 
   return (
     <aside className="portal-sidebar">
@@ -28,12 +31,20 @@ export function Sidebar({ active }: { active: UserRole }) {
           </Link>
         ))}
       </nav>
-      <Link className="button dark wide" to="/organizer/events/new">
-        New Trek
-      </Link>
+      {active === 'organizer' && (
+        <Link className="button dark wide" to="/organizer/events/new">
+          New Trek
+        </Link>
+      )}
       <div className="sidebar-user">
         <img src={IMG.avatar} alt="User" />
-        <span>{active === 'admin' ? 'Zaw Min' : 'Mandalay Trails'}</span>
+        <span>
+          {active === 'admin'
+            ? 'Zaw Min'
+            : active === 'organizer'
+              ? 'Mandalay Trails'
+              : 'Aung Kyaw'}
+        </span>
         <small>{active === 'admin' ? 'Chief Administrator' : 'Management Portal'}</small>
       </div>
     </aside>
@@ -42,10 +53,14 @@ export function Sidebar({ active }: { active: UserRole }) {
 
 export function PortalShell({ active, children }: { active: UserRole; children: ReactNode }) {
   return (
-    <main className="portal-shell">
-      <Sidebar active={active} />
-      <section className="portal-content">{children}</section>
-    </main>
+    <>
+      <Header />
+      <main className="portal-shell">
+        <Sidebar active={active} />
+        <section className="portal-content">{children}</section>
+      </main>
+      <Footer />
+    </>
   )
 }
 

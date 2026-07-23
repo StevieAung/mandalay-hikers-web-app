@@ -17,18 +17,12 @@ export default function OrganizerApplicationPage() {
   }
 
   return (
-    <PortalShell
-      active={
-        user?.role === 'admin' ? 'admin' : user?.role === 'organizer' ? 'organizer' : 'explorer'
-      }
-    >
+    <PortalShell active={user?.role === 'organizer' ? 'organizer' : 'explorer'}>
       <div className="portal-title-row">
         <div>
           <span className="label orange-text">Explorer Path</span>
           <h1>Organizer Application</h1>
-          <p>
-            Explorers submit a request first. Admin approval changes the account role to organizer.
-          </p>
+          <p>Explorers submit a request first. Approval changes the account role to organizer.</p>
         </div>
       </div>
       {user?.role !== 'explorer' ? (
@@ -36,13 +30,10 @@ export default function OrganizerApplicationPage() {
           <h2>
             {user?.role === 'organizer'
               ? 'You are already an organizer.'
-              : 'Admin accounts can approve organizers.'}
+              : 'Application unavailable.'}
           </h2>
           <p>Use the correct dashboard for your role to continue managing the platform.</p>
-          <Link
-            className="button cta"
-            to={user?.role === 'admin' ? '/admin-dashboard' : '/organizer-dashboard'}
-          >
+          <Link className="button cta" to="/organizer-dashboard">
             Open Dashboard
           </Link>
         </article>

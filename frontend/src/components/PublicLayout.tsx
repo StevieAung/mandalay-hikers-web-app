@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { Link, NavLink, Outlet } from 'react-router-dom'
+import type { ReactNode } from 'react'
+import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import AngleDown2 from 'reicon-react/icons/AngleDown2'
 import ShieldCheck from 'reicon-react/icons/ShieldCheck'
 import User from 'reicon-react/icons/User'
@@ -15,8 +16,9 @@ export function PublicLayout() {
   )
 }
 
-function Header() {
+export function Header() {
   const { user, applications, logout } = useAuth()
+  const { pathname } = useLocation()
   const [open, setOpen] = useState(false)
   const portalPath = user ? dashboardPathForRole(user.role) : '/login'
   const profilePath =
@@ -28,6 +30,7 @@ function Header() {
   const organizerApplication = applications.find((application) => application.email === user?.email)
   const isVerifiedOrganizer =
     user?.role === 'organizer' || organizerApplication?.status === 'approved'
+  const isCurrentPath = (path: string) => pathname === path
 
   return (
     <header className="site-header">
@@ -60,11 +63,18 @@ function Header() {
             </Link>
             <div className="user-menu-panel">
               <span>{user.name}</span>
-              {profilePath && <Link to={profilePath}>Profile</Link>}
-              <Link to={portalPath}>Dashboard</Link>
+              {profilePath && (
+                <MenuLink current={isCurrentPath(profilePath)} to={profilePath}>
+                  Profile
+                </MenuLink>
+              )}
+              <MenuLink current={isCurrentPath(portalPath)} to={portalPath}>
+                Dashboard
+              </MenuLink>
               {(user.role === 'explorer' || user.role === 'organizer') && (
-                <Link
+                <MenuLink
                   className={isVerifiedOrganizer ? 'verified-menu-item' : ''}
+                  current={isCurrentPath('/organizer/apply')}
                   to="/organizer/apply"
                 >
                   {isVerifiedOrganizer && <ShieldCheck size={18} weight="Filled" />}
@@ -73,7 +83,7 @@ function Header() {
                     : organizerApplication?.status === 'pending'
                       ? 'Application Pending'
                       : 'Organizer Application'}
-                </Link>
+                </MenuLink>
               )}
               <button type="button" onClick={logout}>
                 Logout
@@ -87,5 +97,28 @@ function Header() {
         )}
       </div>
     </header>
+  )
+}
+
+function MenuLink({
+  children,
+  className = '',
+  current,
+  to,
+}: {
+  children: ReactNode
+  className?: string
+  current: boolean
+  to: string
+}) {
+  return (
+    <Link
+      aria-current={current ? 'page' : undefined}
+      className={`${className} ${current ? 'current-menu-item' : ''}`.trim()}
+      to={to}
+    >
+      {children}
+      {current && <b>Current</b>}
+    </Link>
   )
 }

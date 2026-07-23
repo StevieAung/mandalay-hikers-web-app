@@ -6,7 +6,30 @@ import { useAuth } from '../context/useAuth'
 
 export default function EventsPage() {
   const { user } = useAuth()
-  const createPath = user ? '/organizer/events/new' : '/login'
+  const createPath =
+    user?.role === 'organizer'
+      ? '/organizer/events/new'
+      : user?.role === 'explorer'
+        ? '/organizer/apply'
+        : '/login'
+  const createLabel =
+    user?.role === 'organizer'
+      ? 'Create Event'
+      : user?.role === 'explorer'
+        ? 'Apply to Organize'
+        : 'Sign In'
+  const leadPath =
+    user?.role === 'organizer'
+      ? '/organizer-dashboard'
+      : user?.role === 'explorer'
+        ? '/organizer/apply'
+        : '/login'
+  const leadLabel =
+    user?.role === 'organizer'
+      ? 'Open organizer dashboard'
+      : user?.role === 'explorer'
+        ? 'Apply to organize'
+        : 'Sign in to organize'
 
   return (
     <main>
@@ -20,9 +43,12 @@ export default function EventsPage() {
               Ayeyarwady plains. Reliability is our terrain.
             </p>
           </div>
-          <Link className="button cta" to={createPath}>
-            <span className="material-symbols-outlined">add</span>Create Event
-          </Link>
+          {user?.role !== 'admin' && (
+            <Link className="button cta" to={createPath}>
+              <span className="material-symbols-outlined">add</span>
+              {createLabel}
+            </Link>
+          )}
         </div>
         <div className="events-grid">
           <Link className="featured-event" to="/events/yankin-dawn">
@@ -44,12 +70,9 @@ export default function EventsPage() {
             <span className="material-symbols-outlined">group_add</span>
             <h3>Want to lead a trek?</h3>
             <p>
-              Explorers can apply to become verified organizers. Admin approval unlocks event
-              creation.
+              Explorers can apply to become verified organizers. Approval unlocks event creation.
             </p>
-            <Link to={user ? '/organizer/apply' : '/login'}>
-              {user ? 'Apply to organize' : 'Sign in to organize'}
-            </Link>
+            {user?.role !== 'admin' && <Link to={leadPath}>{leadLabel}</Link>}
           </article>
         </div>
         <section className="safety-band">

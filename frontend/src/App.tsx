@@ -3,7 +3,6 @@ import './App.css'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import { PublicLayout } from './components/PublicLayout'
 import { AuthProvider } from './context/AuthContext'
-import AdminDashboardPage from './pages/AdminDashboardPage'
 import AdminEntryPage from './pages/AdminEntryPage'
 import AuthPage from './pages/AuthPage'
 import CommunityPage from './pages/CommunityPage'
@@ -47,7 +46,7 @@ function App() {
           <Route
             path="/organizer/apply"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute roles={['explorer', 'organizer']}>
                 <OrganizerApplicationPage />
               </ProtectedRoute>
             }
@@ -63,21 +62,12 @@ function App() {
           <Route
             path="/organizer/events/new"
             element={
-              <ProtectedRoute roles={['organizer', 'admin']}>
+              <ProtectedRoute roles={['organizer']}>
                 <CreateEventPage />
               </ProtectedRoute>
             }
           />
           <Route path="/admin" element={<AdminEntryPage />} />
-          <Route path="/admin-login" element={<AdminEntryPage />} />
-          <Route
-            path="/admin-dashboard"
-            element={
-              <ProtectedRoute roles={['admin']} loginPath="/admin-login">
-                <AdminDashboardPage />
-              </ProtectedRoute>
-            }
-          />
           <Route path="/dashboard" element={<Navigate to="/explorer-dashboard" replace />} />
           <Route path="/organizer" element={<Navigate to="/organizer-dashboard" replace />} />
           <Route path="*" element={<Navigate to="/" replace />} />
