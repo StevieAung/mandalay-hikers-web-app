@@ -6,6 +6,8 @@ import ShieldCheck from 'reicon-react/icons/ShieldCheck'
 import User from 'reicon-react/icons/User'
 import { useAuth } from '../context/useAuth'
 import { dashboardPathForRole } from '../utils/routes'
+import { LanguageToggle } from './LanguageToggle'
+import { useLocale } from '../context/useLocale'
 
 export function PublicLayout() {
   return (
@@ -18,6 +20,7 @@ export function PublicLayout() {
 
 export function Header() {
   const { user, applications, logout } = useAuth()
+  const { t } = useLocale()
   const { pathname } = useLocation()
   const [open, setOpen] = useState(false)
   const portalPath = user ? dashboardPathForRole(user.role) : '/login'
@@ -41,17 +44,18 @@ export function Header() {
         className="icon-button menu-button"
         type="button"
         onClick={() => setOpen(!open)}
-        aria-label="Toggle menu"
+        aria-label={t('nav.menu')}
       >
         <span className="material-symbols-outlined">{open ? 'close' : 'menu'}</span>
       </button>
       <nav className={open ? 'top-nav open' : 'top-nav'}>
-        <NavLink to="/trails">Trails</NavLink>
-        <NavLink to="/events">Events</NavLink>
-        <NavLink to="/community">Community</NavLink>
+        <NavLink to="/trails">{t('nav.trails')}</NavLink>
+        <NavLink to="/events">{t('nav.events')}</NavLink>
+        <NavLink to="/community">{t('nav.community')}</NavLink>
       </nav>
-      <div className="header-actions">
-        <Link className="search-icon" to="/trails" aria-label="Search trails">
+      <div className={open ? 'header-actions open' : 'header-actions'}>
+        <LanguageToggle />
+        <Link className="search-icon" to="/trails" aria-label={t('nav.search')}>
           <span className="material-symbols-outlined">search</span>
         </Link>
         {user ? (
@@ -65,11 +69,11 @@ export function Header() {
               <span>{user.name}</span>
               {profilePath && (
                 <MenuLink current={isCurrentPath(profilePath)} to={profilePath}>
-                  Profile
+                  {t('nav.profile')}
                 </MenuLink>
               )}
               <MenuLink current={isCurrentPath(portalPath)} to={portalPath}>
-                Dashboard
+                {t('nav.dashboard')}
               </MenuLink>
               {(user.role === 'explorer' || user.role === 'organizer') && (
                 <MenuLink
@@ -86,13 +90,13 @@ export function Header() {
                 </MenuLink>
               )}
               <button type="button" onClick={logout}>
-                Logout
+                {t('nav.logout')}
               </button>
             </div>
           </div>
         ) : (
           <Link className="button dark" to="/login">
-            Sign In
+            {t('nav.signIn')}
           </Link>
         )}
       </div>

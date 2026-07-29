@@ -2,6 +2,8 @@ import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import type { CommunityPost, Trail, TrekEvent } from '../types'
 import { bgStyle } from '../utils/style'
+import { useLocale } from '../context/useLocale'
+import { formatEventDate } from '../utils/date'
 
 export function OverlayTrail({ trail }: { trail: Trail }) {
   return (
@@ -16,21 +18,24 @@ export function OverlayTrail({ trail }: { trail: Trail }) {
 }
 
 export function TrailListingCard({ trail }: { trail: Trail }) {
+  const { t } = useLocale()
   return (
     <Link className="trail-list-card" to={`/trails/${trail.id}`}>
       <div className="image-wrap">
         <img src={trail.image} alt={trail.name} />
-        <span className={`badge ${trail.difficulty.toLowerCase()}`}>{trail.badge}</span>
+        <span className={`badge ${(trail.difficultyKey ?? trail.difficulty).toLowerCase()}`}>
+          {trail.badge}
+        </span>
       </div>
       <div>
         <h2>{trail.name}</h2>
         <p>{trail.summary}</p>
         <div className="card-data">
           <span>
-            Dist <strong>{trail.distance}</strong>
+            {t('card.distance')} <strong>{trail.distance}</strong>
           </span>
           <span>
-            Elev <strong>{trail.elevation}</strong>
+            {t('card.elevation')} <strong>{trail.elevation}</strong>
           </span>
           <span className="arrow">-&gt;</span>
         </div>
@@ -40,6 +45,7 @@ export function TrailListingCard({ trail }: { trail: Trail }) {
 }
 
 export function EventListingCard({ event }: { event: TrekEvent }) {
+  const { locale, t } = useLocale()
   return (
     <Link className="event-card" to={`/events/${event.id}`}>
       <div>
@@ -48,14 +54,12 @@ export function EventListingCard({ event }: { event: TrekEvent }) {
           {event.status}
         </span>
       </div>
-      <p className="mono">
-        {event.date} - {event.time}
-      </p>
+      <p className="mono">{formatEventDate(event.date, event.time, locale)}</p>
       <h3>{event.title}</h3>
       <p>{event.text}</p>
       {event.status === 'Full' && (
         <button className="button outline wide" type="button">
-          Registration Closed
+          {t('card.registrationClosed')}
         </button>
       )}
     </Link>
@@ -87,6 +91,7 @@ export function Section({
 }
 
 export function PostPreview({ post }: { post: CommunityPost }) {
+  const { t } = useLocale()
   const authorPath =
     post.authorId === 'mandalay-treks'
       ? `/organizers/${post.authorId}`
@@ -99,7 +104,7 @@ export function PostPreview({ post }: { post: CommunityPost }) {
         <Link to={authorPath}>{post.handle}</Link>
         <h3>{post.title}</h3>
         <p>{post.likes}</p>
-        <button type="button" aria-label="Like">
+        <button type="button" aria-label={t('card.like')}>
           ♡
         </button>
       </div>

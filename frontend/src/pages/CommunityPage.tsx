@@ -4,29 +4,29 @@ import MessageDots from 'reicon-react/icons/MessageDots'
 import ShieldCheck from 'reicon-react/icons/ShieldCheck'
 import User from 'reicon-react/icons/User'
 import { Footer } from '../components/Footer'
-import { communityPosts } from '../data/mockData'
+import { useLocalizedContent } from '../data/useLocalizedContent'
+import { useLocale } from '../context/useLocale'
 
 export default function CommunityPage() {
+  const { t } = useLocale()
+  const { communityPosts } = useLocalizedContent()
   const [liked, setLiked] = useState<Record<string, boolean>>({})
 
   return (
     <main>
       <section className="community-page">
         <div className="stacked-heading small">
-          <span>Field Notes</span>
-          <strong>Community Dispatches</strong>
-          <p>
-            Trip reports, gear advice, route questions, and local hiking knowledge from Mandalay
-            trekkers.
-          </p>
+          <span>{t('community.field')}</span>
+          <strong>{t('community.title')}</strong>
+          <p>{t('community.description')}</p>
         </div>
         <div className="community-board">
           <form className="dispatch-form" onSubmit={(event) => event.preventDefault()}>
-            <h2>Share a trail note</h2>
-            <input placeholder="Subject" />
-            <textarea placeholder="What should other hikers know?" />
+            <h2>{t('community.share')}</h2>
+            <input placeholder={t('community.subject')} />
+            <textarea placeholder={t('community.placeholder')} />
             <button className="button cta wide" type="submit">
-              Publish Dispatch
+              {t('community.publish')}
             </button>
           </form>
           <div className="dispatch-list">
@@ -45,14 +45,11 @@ export default function CommunityPage() {
                       {post.handle}
                     </Link>
                     <h3>{post.title}</h3>
-                    <p>
-                      Practical field notes from recent Mandalay hikes, focused on terrain, safety,
-                      and timing.
-                    </p>
+                    <p>{t('community.note')}</p>
                     <div className="dispatch-actions">
                       <Link to={authorPath}>
                         <MessageDots size={18} />
-                        View profile
+                        {t('community.profile')}
                       </Link>
                       <button
                         type="button"

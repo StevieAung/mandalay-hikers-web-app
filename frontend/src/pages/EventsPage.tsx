@@ -1,11 +1,15 @@
 import { Link } from 'react-router-dom'
 import { EventListingCard } from '../components/Cards'
 import { Footer } from '../components/Footer'
-import { events } from '../data/mockData'
 import { useAuth } from '../context/useAuth'
+import { useLocale } from '../context/useLocale'
+import { useLocalizedContent } from '../data/useLocalizedContent'
+import { formatEventDate } from '../utils/date'
 
 export default function EventsPage() {
   const { user } = useAuth()
+  const { locale, t } = useLocale()
+  const { events } = useLocalizedContent()
   const createPath =
     user?.role === 'organizer'
       ? '/organizer/events/new'
@@ -14,10 +18,10 @@ export default function EventsPage() {
         : '/login'
   const createLabel =
     user?.role === 'organizer'
-      ? 'Create Event'
+      ? t('events.create')
       : user?.role === 'explorer'
-        ? 'Apply to Organize'
-        : 'Sign In'
+        ? t('events.apply')
+        : t('nav.signIn')
   const leadPath =
     user?.role === 'organizer'
       ? '/organizer-dashboard'
@@ -37,11 +41,8 @@ export default function EventsPage() {
         <div className="events-head">
           <div className="stacked-heading small">
             <span>Mandalay Trek</span>
-            <strong>Seasonal Expeditions</strong>
-            <p>
-              Coordinate with local trekkers for upcoming expeditions across the Shan Hills and the
-              Ayeyarwady plains. Reliability is our terrain.
-            </p>
+            <strong>{t('events.seasonal')}</strong>
+            <p>{t('events.description')}</p>
           </div>
           {user?.role !== 'admin' && (
             <Link className="button cta" to={createPath}>
@@ -56,9 +57,7 @@ export default function EventsPage() {
             <div>
               <span className="badge dark-badge">{events[0].status}</span>
               <span className="badge pale">Advanced</span>
-              <p className="mono">
-                {events[0].date} - {events[0].time}
-              </p>
+              <p className="mono">{formatEventDate(events[0].date, events[0].time, locale)}</p>
               <h2>{events[0].title}</h2>
               <p>{events[0].text}</p>
             </div>
@@ -68,23 +67,18 @@ export default function EventsPage() {
           ))}
           <article className="lead-card">
             <span className="material-symbols-outlined">group_add</span>
-            <h3>Want to lead a trek?</h3>
-            <p>
-              Explorers can apply to become verified organizers. Approval unlocks event creation.
-            </p>
+            <h3>{t('events.lead')}</h3>
+            <p>{t('events.leadCopy')}</p>
             {user?.role !== 'admin' && <Link to={leadPath}>{leadLabel}</Link>}
           </article>
         </div>
         <section className="safety-band">
           <div>
-            <p className="hero-light">Safety is our</p>
-            <h2>Base Camp</h2>
-            <p>
-              Every event on Hikers is vetted for guide certifications and real-time weather
-              monitoring. No one treks alone.
-            </p>
+            <p className="hero-light">{t('events.safety')}</p>
+            <h2>{t('events.base')}</h2>
+            <p>{t('events.safetyCopy')}</p>
             <button className="button cta" type="button">
-              Read Guidelines
+              {t('events.guidelines')}
             </button>
           </div>
           <div className="contour-lines" aria-hidden="true" />

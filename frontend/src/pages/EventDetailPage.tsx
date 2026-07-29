@@ -5,14 +5,16 @@ import { Panel, Stat } from '../components/Cards'
 import { Footer } from '../components/Footer'
 import { IMG } from '../data/mockData'
 import { bgStyle } from '../utils/style'
+import { useLocale } from '../context/useLocale'
 
 export default function EventDetailPage() {
+  const { t } = useLocale()
   const [joined, setJoined] = useState(false)
 
   return (
     <main>
       <section className="event-detail-hero photo-hero" style={bgStyle(IMG.eventHero)}>
-        <p className="hero-light">Featured Trek</p>
+        <p className="hero-light">{t('event.featured')}</p>
         <h1>Yankin Hill Dawn Expedition</h1>
       </section>
       <section className="event-detail-layout">
@@ -38,15 +40,11 @@ export default function EventDetailPage() {
               Expert Navigator
             </p>
           </div>
-          <h2 className="section-title">Trek Overview</h2>
-          <p className="detail-copy">
-            Experience the spiritual sunrise of Mandalay from the jagged peaks of Yankin Hill. This
-            expedition is designed for those who appreciate the silence of the pre-dawn hours and
-            the reward of panoramic vistas.
-          </p>
+          <h2 className="section-title">{t('event.overview')}</h2>
+          <p className="detail-copy">{t('event.copy')}</p>
           <div className="requirement-grid">
             <Panel
-              title="Safety Requirements"
+              title={t('event.safetyRequirements')}
               items={[
                 'Physical fitness for 250m elevation gain',
                 'Familiarity with rocky terrain',
@@ -54,7 +52,7 @@ export default function EventDetailPage() {
               ]}
             />
             <Panel
-              title="Equipment List"
+              title={t('event.equipment')}
               items={[
                 'Headlamp with extra batteries',
                 'High-traction trekking shoes',
@@ -65,21 +63,21 @@ export default function EventDetailPage() {
           <div className="meeting-map">
             <img src={IMG.detailMap} alt="Meeting point map" />
             <div>
-              <span>Meeting Point</span>
+              <span>{t('event.meeting')}</span>
               <strong>Yankin Hill South Entrance Pagoda</strong>
             </div>
           </div>
         </div>
         <aside className="join-panel">
-          <span>Cost</span>
+          <span>{t('event.cost')}</span>
           <strong>
             25,000 <small>MMK</small>
           </strong>
           <button className="button cta wide" type="button" onClick={() => setJoined(!joined)}>
-            {joined ? 'Joined' : 'Join Event'}
+            {joined ? t('event.joined') : t('event.join')}
           </button>
           <button className="button outline wide" type="button">
-            Save to List
+            {t('event.save')}
           </button>
           <p>"Limited to 12 participants for coordination safety. 8 slots remaining."</p>
           <div className="avatar-row">

@@ -22,7 +22,8 @@ export type Trail = {
   id: string
   name: string
   badge: string
-  difficulty: TrailDifficulty
+  difficulty: string
+  difficultyKey?: TrailDifficulty
   distance: string
   elevation: string
   image: string

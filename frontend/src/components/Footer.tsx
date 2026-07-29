@@ -1,18 +1,20 @@
 import { Link } from 'react-router-dom'
+import { useLocale } from '../context/useLocale'
 
 export function Footer() {
+  const { t } = useLocale()
   return (
     <footer className="footer">
       <div>
         <Link className="logo light-logo" to="/">
           Hikers
         </Link>
-        <p>© 2024 Hikers Mandalay. Built for the rugged.</p>
+        <p>{t('footer.copy')}</p>
       </div>
       <nav>
-        <a>Privacy Policy</a>
-        <a>Safety Guidelines</a>
-        <a>Trail Conduct</a>
+        <a>{t('footer.privacy')}</a>
+        <a>{t('footer.safety')}</a>
+        <a>{t('footer.conduct')}</a>
       </nav>
     </footer>
   )

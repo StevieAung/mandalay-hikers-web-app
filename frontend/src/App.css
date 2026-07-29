@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&family=Space+Grotesk:wght@300;400;600;700&family=Work+Sans:wght@300;400;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&family=Noto+Sans+Myanmar:wght@400;500;600;700&family=Space+Grotesk:wght@300;400;600;700&family=Work+Sans:wght@300;400;600;700&display=swap');
 
 .material-symbols-outlined {
   font-family: 'Material Symbols Outlined';
@@ -70,6 +70,43 @@ a {
   display: flex;
   gap: 18px;
   justify-content: end;
+}
+
+.language-toggle {
+  align-items: center;
+  border: 1px solid var(--outline-variant);
+  display: inline-flex;
+  font-family: var(--mono);
+  font-size: 10px;
+  gap: 4px;
+  padding: 4px 6px;
+}
+
+.language-toggle button {
+  background: transparent;
+  border: 0;
+  color: var(--stone);
+  cursor: pointer;
+  font: inherit;
+  padding: 3px;
+}
+
+.language-toggle button[aria-pressed='true'] {
+  color: var(--burnt);
+  font-weight: 700;
+}
+
+.auth-language {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 30px;
+}
+
+html[lang='my'] body {
+  font-family: 'Noto Sans Myanmar', var(--body);
+}
+html[lang='my'] :is(p, span, a, button, input, textarea, select, label) {
+  line-height: 1.65;
 }
 
 .search-icon {
@@ -2219,6 +2256,12 @@ textarea {
   .top-nav.open {
     display: grid;
     justify-items: start;
+    padding: 0 0 20px;
+  }
+
+  .header-actions.open {
+    display: flex;
+    justify-content: flex-start;
     padding: 0 0 20px;
   }
 

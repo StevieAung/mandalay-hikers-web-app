@@ -9,6 +9,7 @@ import User from 'reicon-react/icons/User'
 import { Footer } from '../components/Footer'
 import { explorerProfiles } from '../data/mockData'
 import { bgStyle } from '../utils/style'
+import { useLocale } from '../context/useLocale'
 
 function ProfileStat({
   icon: Icon,
@@ -29,6 +30,7 @@ function ProfileStat({
 }
 
 export default function ExplorerProfilePage() {
+  const { t } = useLocale()
   const { id } = useParams()
   const profile = explorerProfiles.find((item) => item.id === id)
 
@@ -56,24 +58,24 @@ export default function ExplorerProfilePage() {
             </span>
             <span>
               <User size={18} />
-              Community explorer
+              {t('profile.communityExplorer')}
             </span>
           </div>
           <Link className="button cta wide" to="/community">
             <MessageDots size={18} />
-            View Community
+            {t('profile.viewCommunity')}
           </Link>
         </aside>
         <div className="profile-main">
           <div className="profile-stats">
-            <ProfileStat icon={Route} label="Completed treks" value={profile.stats.treks} />
-            <ProfileStat icon={Camera} label="Trip posts" value={profile.stats.posts} />
-            <ProfileStat icon={Star} label="Saved trails" value={profile.stats.saved} />
+            <ProfileStat icon={Route} label={t('profile.completed')} value={profile.stats.treks} />
+            <ProfileStat icon={Camera} label={t('profile.posts')} value={profile.stats.posts} />
+            <ProfileStat icon={Star} label={t('profile.saved')} value={profile.stats.saved} />
           </div>
           <section className="profile-panel">
             <div className="profile-panel-head">
-              <h2>Favorite Trails</h2>
-              <Link to="/trails">Explore trails</Link>
+              <h2>{t('profile.favorite')}</h2>
+              <Link to="/trails">{t('profile.explore')}</Link>
             </div>
             <div className="profile-chip-list">
               {profile.favoriteTrails.map((trail) => (
@@ -83,8 +85,8 @@ export default function ExplorerProfilePage() {
           </section>
           <section className="profile-panel">
             <div className="profile-panel-head">
-              <h2>Recent Dispatches</h2>
-              <Link to="/community">All posts</Link>
+              <h2>{t('profile.recent')}</h2>
+              <Link to="/community">{t('profile.allPosts')}</Link>
             </div>
             <div className="profile-post-grid">
               {profile.recentPosts.map((post) => (

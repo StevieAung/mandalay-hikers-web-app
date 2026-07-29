@@ -1,27 +1,32 @@
 import { useState } from 'react'
 import { Footer } from '../components/Footer'
 import { TrailListingCard } from '../components/Cards'
-import { trails } from '../data/mockData'
+import { useLocalizedContent } from '../data/useLocalizedContent'
+import { useLocale } from '../context/useLocale'
 
 export default function TrailDiscoveryPage() {
+  const { t } = useLocale()
+  const { trails } = useLocalizedContent()
   const [difficulty, setDifficulty] = useState('Moderate')
   const filtered =
-    difficulty === 'All' ? trails : trails.filter((trail) => trail.difficulty === difficulty)
+    difficulty === 'All'
+      ? trails
+      : trails.filter((trail) => (trail.difficultyKey ?? trail.difficulty) === difficulty)
   const visible = filtered.length ? filtered : trails
 
   return (
     <main>
       <section className="listing-page">
         <div className="stacked-heading">
-          <span>Discover the Rugged</span>
-          <strong>Mandalay Trails</strong>
+          <span>{t('trails.heading')}</span>
+          <strong>{t('trails.title')}</strong>
         </div>
         <div className="discovery-layout">
           <aside className="filter-rail">
             <div className="filter-title">
-              <span>Refine Results</span>
+              <span>{t('trails.refine')}</span>
               <button type="button" onClick={() => setDifficulty('All')}>
-                Reset All
+                {t('trails.reset')}
               </button>
             </div>
             <label className="check-row">
@@ -56,7 +61,7 @@ export default function TrailDiscoveryPage() {
               <span>0km</span>
               <span>50km+</span>
             </div>
-            <p className="filter-label">Duration</p>
+            <p className="filter-label">{t('trails.duration')}</p>
             <div className="duration-grid">
               {['Short (<3h)', 'Half Day', 'Full Day', 'Multi-day'].map((item) => (
                 <button className={item === 'Half Day' ? 'active' : ''} type="button" key={item}>
@@ -65,14 +70,14 @@ export default function TrailDiscoveryPage() {
               ))}
             </div>
             <label className="select-label">
-              Best Season
+              {t('trails.season')}
               <select>
-                <option>All Seasons</option>
-                <option>Dry Season</option>
+                <option>{t('trails.allSeasons')}</option>
+                <option>{t('trails.dry')}</option>
               </select>
             </label>
             <button className="button cta wide" type="button">
-              Update Results
+              {t('trails.update')}
             </button>
           </aside>
           <div className="trail-card-grid">
@@ -82,7 +87,8 @@ export default function TrailDiscoveryPage() {
           </div>
         </div>
         <button className="load-more" type="button">
-          <span className="material-symbols-outlined">refresh</span>Load More Trails
+          <span className="material-symbols-outlined">refresh</span>
+          {t('trails.load')}
         </button>
       </section>
       <Footer />

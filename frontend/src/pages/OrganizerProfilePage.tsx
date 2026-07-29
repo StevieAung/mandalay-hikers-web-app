@@ -10,6 +10,7 @@ import { EventListingCard } from '../components/Cards'
 import { Footer } from '../components/Footer'
 import { organizerProfiles } from '../data/mockData'
 import { bgStyle } from '../utils/style'
+import { useLocale } from '../context/useLocale'
 
 function OrganizerStat({
   icon: Icon,
@@ -30,6 +31,7 @@ function OrganizerStat({
 }
 
 export default function OrganizerProfilePage() {
+  const { t } = useLocale()
   const { id } = useParams()
   const profile = organizerProfiles.find((item) => item.id === id)
 
@@ -46,7 +48,7 @@ export default function OrganizerProfilePage() {
           <div>
             <span className="badge dark-badge">
               <ShieldCheck size={16} weight="Filled" />
-              Verified organizer
+              {t('profile.verified')}
             </span>
             <h1>{profile.name}</h1>
             <p>{profile.handle}</p>
@@ -63,7 +65,7 @@ export default function OrganizerProfilePage() {
             </span>
             <span>
               <CalendarDate size={18} />
-              Verified since {profile.verifiedSince}
+              {t('profile.verifiedSince')} {profile.verifiedSince}
             </span>
             <span>
               <RouteTrack size={18} />
@@ -71,19 +73,31 @@ export default function OrganizerProfilePage() {
             </span>
           </div>
           <Link className="button cta wide" to="/events">
-            View Events
+            {t('profile.viewEvents')}
           </Link>
         </aside>
         <div className="profile-main">
           <div className="profile-stats">
-            <OrganizerStat icon={CalendarDate} label="Hosted events" value={profile.stats.events} />
-            <OrganizerStat icon={Users} label="Participants" value={profile.stats.hikers} />
-            <OrganizerStat icon={Star} label="Avg. rating" value={profile.stats.rating} />
+            <OrganizerStat
+              icon={CalendarDate}
+              label={t('profile.hosted')}
+              value={profile.stats.events}
+            />
+            <OrganizerStat
+              icon={Users}
+              label={t('profile.participants')}
+              value={profile.stats.hikers}
+            />
+            <OrganizerStat
+              icon={Star}
+              label={t('profile.avgRating')}
+              value={profile.stats.rating}
+            />
           </div>
           <section className="profile-panel">
             <div className="profile-panel-head">
-              <h2>Upcoming Events</h2>
-              <Link to="/events">Full calendar</Link>
+              <h2>{t('profile.upcoming')}</h2>
+              <Link to="/events">{t('home.calendar')}</Link>
             </div>
             <div className="profile-event-grid">
               {profile.upcomingEvents.map((event) => (

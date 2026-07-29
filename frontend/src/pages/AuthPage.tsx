@@ -6,6 +6,8 @@ import { IMG } from '../data/mockData'
 import type { AuthMode } from '../types'
 import { dashboardPathForRole } from '../utils/routes'
 import { bgStyle } from '../utils/style'
+import { useLocale } from '../context/useLocale'
+import { LanguageToggle } from '../components/LanguageToggle'
 
 type AuthPageProps = {
   mode: AuthMode
@@ -24,6 +26,7 @@ export default function AuthPage({
   const isAdminLogin = intent === 'admin'
   const navigate = useNavigate()
   const { login, register } = useAuth()
+  const { t } = useLocale()
   const [form, setForm] = useState({
     name: '',
     email: defaultEmail,
@@ -44,58 +47,59 @@ export default function AuthPage({
   return (
     <main className="auth-shell">
       <section className="auth-form-side">
+        <div className="auth-language">
+          <LanguageToggle />
+        </div>
         <form className="auth-form" onSubmit={submit}>
           <div className="auth-heading">
-            <span>{isRegister ? 'Join the' : isAdminLogin ? 'Admin' : 'Welcome'}</span>
+            <span>
+              {isRegister ? t('auth.join') : isAdminLogin ? t('auth.admin') : t('auth.welcome')}
+            </span>
             <strong>
-              {isRegister ? 'Trail Network.' : isAdminLogin ? 'Command Login.' : 'Back Trekker.'}
+              {isRegister ? t('auth.network') : isAdminLogin ? t('auth.command') : t('auth.back')}
             </strong>
           </div>
           {isRegister && (
             <Field
-              label="Full Name"
+              label={t('auth.name')}
               value={form.name}
               onChange={(value) => setForm({ ...form, name: value })}
             />
           )}
           <Field
-            label="Email Address"
+            label={t('auth.email')}
             value={form.email}
             onChange={(value) => setForm({ ...form, email: value })}
           />
           <Field
-            label="Password"
+            label={t('auth.password')}
             type="password"
             value={form.password}
             onChange={(value) => setForm({ ...form, password: value })}
-            aside="Forgot?"
+            aside={t('auth.forgot')}
           />
           <button className="button cta wide" type="submit">
-            {isRegister
-              ? 'Create Explorer Account'
-              : isAdminLogin
-                ? 'Enter Admin Panel'
-                : 'Sign In'}
+            {isRegister ? t('auth.create') : isAdminLogin ? t('auth.enterAdmin') : t('nav.signIn')}
           </button>
           {!isAdminLogin && (
             <>
-              <div className="auth-divider">Or coordinate via</div>
+              <div className="auth-divider">{t('auth.or')}</div>
               <div className="social-row">
                 <button type="button">Google</button>
                 <button type="button">GitHub</button>
               </div>
               <p className="auth-switch">
-                {isRegister ? 'Already trail ready?' : 'New to the trails?'}{' '}
+                {isRegister ? t('auth.already') : t('auth.new')}{' '}
                 <Link to={isRegister ? '/login' : '/register'}>
-                  {isRegister ? 'Sign In' : 'Create an Account'}
+                  {isRegister ? t('nav.signIn') : t('auth.createAccount')}
                 </Link>
               </p>
             </>
           )}
         </form>
         <footer className="auth-meta">
-          <span>{isAdminLogin ? 'Admin access only' : 'Explorer by default'}</span>
-          <span>Mandalay Region</span>
+          <span>{isAdminLogin ? t('auth.adminOnly') : t('auth.explorerDefault')}</span>
+          <span>{t('auth.region')}</span>
         </footer>
       </section>
       <section className="auth-photo photo-hero" style={bgStyle(IMG.auth)}>
@@ -103,14 +107,10 @@ export default function AuthPage({
           Hikers
         </Link>
         <div>
-          <span>Rugged.</span>
-          <strong>Reliable.</strong>
-          <p>
-            {isAdminLogin
-              ? 'Review organizer applications, moderate community content, and manage Mandalay trails from one command view.'
-              : 'Register as an explorer, then apply for organizer approval when you are ready to lead.'}
-          </p>
-          <small>Trail Ready</small>
+          <span>{t('auth.rugged')}</span>
+          <strong>{t('auth.reliable')}</strong>
+          <p>{isAdminLogin ? t('auth.adminDescription') : t('auth.description')}</p>
+          <small>{t('auth.ready')}</small>
         </div>
       </section>
     </main>
