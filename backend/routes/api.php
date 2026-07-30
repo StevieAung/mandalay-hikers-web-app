@@ -14,6 +14,7 @@ Route::get('/trails/{trail}', [TrailController::class, 'show']);
 Route::get('/events', [EventController::class, 'index']);
 Route::get('/events/{event}', [EventController::class, 'show']);
 Route::get('/posts', [CommunityController::class, 'posts']);
+Route::get('/profiles/{user}', [ProfileController::class, 'show']);
 
 Route::post('/auth/register', [AuthController::class, 'register']);
 Route::post('/auth/login', [AuthController::class, 'login']);
@@ -21,7 +22,8 @@ Route::post('/auth/login', [AuthController::class, 'login']);
 Route::middleware(['auth:sanctum', 'not.banned'])->group(function () {
     Route::get('/auth/me', [AuthController::class, 'me']);
     Route::post('/auth/logout', [AuthController::class, 'logout']);
-    Route::put('/profile', [ProfileController::class, 'update']);
+    Route::get('/me/dashboard', [ProfileController::class, 'dashboard']);
+    Route::match(['put', 'post'], '/profile', [ProfileController::class, 'update']);
 
     Route::post('/trails/{trail}/favorite', [TrailController::class, 'favorite']);
     Route::delete('/trails/{trail}/favorite', [TrailController::class, 'unfavorite']);

@@ -1,16 +1,18 @@
-import { Link, Navigate, useParams } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { Link, useParams } from 'react-router-dom'
 import type { IconComponent } from 'reicon-react/createIcon'
 import CalendarDate from 'reicon-react/icons/CalendarDate'
 import MapPoint2 from 'reicon-react/icons/MapPoint2'
 import RouteTrack from 'reicon-react/icons/RouteTrack'
 import ShieldCheck from 'reicon-react/icons/ShieldCheck'
-import Star from 'reicon-react/icons/Star'
 import Users from 'reicon-react/icons/Users'
-import { EventListingCard } from '../components/Cards'
 import { Footer } from '../components/Footer'
-import { organizerProfiles } from '../data/mockData'
-import { bgStyle } from '../utils/style'
+import { ProfileHeader } from '../components/ProfileHeader'
+import { useAuth } from '../context/useAuth'
 import { useLocale } from '../context/useLocale'
+import type { ApiEvent, ProfilePayload } from '../types/api'
+import { ApiError, apiRequest } from '../utils/api'
+import { formatDate } from '../utils/format'
 
 function OrganizerStat({
   icon: Icon,
@@ -30,46 +32,103 @@ function OrganizerStat({
   )
 }
 
+function HostedEventCard({ event }: { event: ApiEvent }) {
+  return (
+    <article className="profile-event-card">
+      {event.cover_image ? (
+        <img src={event.cover_image} alt={event.title} />
+      ) : (
+        <span className="image-placeholder">No image</span>
+      )}
+      <span className="badge orange">{event.status}</span>
+      <p className="mono">{formatDate(event.starts_at)}</p>
+      <h3>{event.title}</h3>
+      <p>{event.destination}</p>
+    </article>
+  )
+}
+
 export default function OrganizerProfilePage() {
   const { t } = useLocale()
+  const { user: authUser } = useAuth()
   const { id } = useParams()
-  const profile = organizerProfiles.find((item) => item.id === id)
+  const [profile, setProfile] = useState<ProfilePayload | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
 
-  if (!profile) return <Navigate to="/events" replace />
+  useEffect(() => {
+    const loadProfile = async () => {
+      try {
+        const response = await apiRequest<ProfilePayload>(`/api/profiles/${id}`)
+        setProfile(response)
+        setError(null)
+      } catch (requestError) {
+        setError(
+          requestError instanceof ApiError ? requestError.message : 'Could not load this profile.',
+        )
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    void loadProfile()
+  }, [id])
+
+  if (isLoading) return <main className="route-loading">Loading profile</main>
+
+  if (error || !profile) {
+    return (
+      <main>
+        <section className="profile-layout single">
+          <p className="table-empty danger">{error || 'Profile not found.'}</p>
+        </section>
+        <Footer />
+      </main>
+    )
+  }
+
+  const user = profile.user
+  const details = user.profile
+  const hostedEvents = profile.hosted_events
+  const participantTotal = hostedEvents.reduce(
+    (sum, event) => sum + (event.participants_count ?? 0),
+    0,
+  )
+  const verifiedDate = profile.approved_organizer_application?.reviewed_at
+  const isOwner = Boolean(authUser?.id && Number(id) === authUser.id)
 
   return (
     <main>
-      <section
-        className="profile-hero organizer-profile-hero photo-hero"
-        style={bgStyle(profile.cover)}
-      >
-        <div className="profile-identity">
-          <img src={profile.avatar} alt={profile.name} />
-          <div>
-            <span className="badge dark-badge">
-              <ShieldCheck size={16} weight="Filled" />
-              {t('profile.verified')}
-            </span>
-            <h1>{profile.name}</h1>
-            <p>{profile.handle}</p>
-          </div>
-        </div>
-      </section>
+      <ProfileHeader
+        badge={
+          <span className="badge dark-badge">
+            <ShieldCheck size={16} weight="Filled" />
+            {user.role === 'organizer' ? t('profile.verified') : user.role}
+          </span>
+        }
+        isOwner={isOwner}
+        onProfileSaved={setProfile}
+        profile={profile}
+      />
       <section className="profile-layout">
         <aside className="profile-side">
-          <p className="profile-bio">{profile.bio}</p>
+          <p className="profile-bio">
+            {details?.bio || 'This organizer has not added a profile bio yet.'}
+          </p>
           <div className="profile-meta">
             <span>
               <MapPoint2 size={18} />
-              {profile.location}
+              {details?.location || 'Location not added'}
             </span>
             <span>
               <CalendarDate size={18} />
-              {t('profile.verifiedSince')} {profile.verifiedSince}
+              {verifiedDate
+                ? `${t('profile.verifiedSince')} ${formatDate(verifiedDate)}`
+                : user.role}
             </span>
             <span>
               <RouteTrack size={18} />
-              {profile.specialty}
+              {hostedEvents.length} hosted events
             </span>
           </div>
           <Link className="button cta wide" to="/events">
@@ -81,29 +140,29 @@ export default function OrganizerProfilePage() {
             <OrganizerStat
               icon={CalendarDate}
               label={t('profile.hosted')}
-              value={profile.stats.events}
+              value={String(hostedEvents.length)}
             />
             <OrganizerStat
               icon={Users}
               label={t('profile.participants')}
-              value={profile.stats.hikers}
+              value={String(participantTotal)}
             />
-            <OrganizerStat
-              icon={Star}
-              label={t('profile.avgRating')}
-              value={profile.stats.rating}
-            />
+            <OrganizerStat icon={RouteTrack} label="Role" value={user.role} />
           </div>
           <section className="profile-panel">
             <div className="profile-panel-head">
               <h2>{t('profile.upcoming')}</h2>
               <Link to="/events">{t('home.calendar')}</Link>
             </div>
-            <div className="profile-event-grid">
-              {profile.upcomingEvents.map((event) => (
-                <EventListingCard key={event.id} event={event} />
-              ))}
-            </div>
+            {hostedEvents.length ? (
+              <div className="profile-event-grid">
+                {hostedEvents.map((event) => (
+                  <HostedEventCard event={event} key={event.id} />
+                ))}
+              </div>
+            ) : (
+              <p className="table-empty">No hosted events yet.</p>
+            )}
           </section>
         </div>
       </section>

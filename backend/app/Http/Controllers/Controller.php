@@ -13,7 +13,7 @@ abstract class Controller
             return null;
         }
 
-        return str_starts_with($path, 'http') ? $path : Storage::url($path);
+        return str_starts_with($path, 'http') ? $path : asset(Storage::url($path));
     }
 
     protected function storeImage(Request $request, string $field, string $directory): ?string

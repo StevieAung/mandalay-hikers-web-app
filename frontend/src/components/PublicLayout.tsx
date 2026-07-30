@@ -25,10 +25,10 @@ export function Header() {
   const [open, setOpen] = useState(false)
   const portalPath = user ? dashboardPathForRole(user.role) : '/login'
   const profilePath =
-    user?.role === 'organizer'
-      ? '/organizers/mandalay-treks'
-      : user?.role === 'explorer'
-        ? '/profiles/kyaw-hiker'
+    user?.id && user.role === 'organizer'
+      ? `/organizers/${user.id}`
+      : user?.id && user.role === 'explorer'
+        ? `/profiles/${user.id}`
         : null
   const organizerApplication = applications.find((application) => application.email === user?.email)
   const isVerifiedOrganizer =

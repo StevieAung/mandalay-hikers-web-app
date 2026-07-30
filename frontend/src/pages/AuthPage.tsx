@@ -134,19 +134,12 @@ export default function AuthPage({
                   : t('nav.signIn')}
           </button>
           {!isAdminLogin && (
-            <>
-              <div className="auth-divider">{t('auth.or')}</div>
-              <div className="social-row">
-                <button type="button">Google</button>
-                <button type="button">GitHub</button>
-              </div>
-              <p className="auth-switch">
-                {isRegister ? t('auth.already') : t('auth.new')}{' '}
-                <Link to={isRegister ? '/login' : '/register'}>
-                  {isRegister ? t('nav.signIn') : t('auth.createAccount')}
-                </Link>
-              </p>
-            </>
+            <p className="auth-switch">
+              {isRegister ? t('auth.already') : t('auth.new')}{' '}
+              <Link to={isRegister ? '/login' : '/register'}>
+                {isRegister ? t('nav.signIn') : t('auth.createAccount')}
+              </Link>
+            </p>
           )}
         </form>
         <footer className="auth-meta">

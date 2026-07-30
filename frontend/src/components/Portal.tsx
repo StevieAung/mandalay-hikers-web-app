@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
-import { IMG } from '../data/mockData'
+import { useAuth } from '../context/useAuth'
 import { dashboardPathForRole } from '../utils/routes'
 import { bgStyle } from '../utils/style'
 import type { UserRole } from '../types'
@@ -8,6 +8,7 @@ import { Footer } from './Footer'
 import { Header } from './PublicLayout'
 
 export function Sidebar({ active }: { active: UserRole }) {
+  const { user } = useAuth()
   const navByRole = {
     explorer: [['explorer', '/explorer-dashboard', 'explore', 'Explorer']],
     organizer: [['organizer', '/organizer-dashboard', 'event_note', 'Organizer']],
@@ -19,7 +20,7 @@ export function Sidebar({ active }: { active: UserRole }) {
     <aside className="portal-sidebar">
       <div>
         <Link className="portal-logo" to={dashboardPathForRole(active)}>
-          {active === 'admin' ? 'Mandalay' : active === 'explorer' ? 'Mandalay Trails' : 'Hikers'}
+          {active === 'admin' ? 'Mandalay' : 'Hikers'}
         </Link>
         <p>Management Portal</p>
       </div>
@@ -37,15 +38,9 @@ export function Sidebar({ active }: { active: UserRole }) {
         </Link>
       )}
       <div className="sidebar-user">
-        <img src={IMG.avatar} alt="User" />
-        <span>
-          {active === 'admin'
-            ? 'Zaw Min'
-            : active === 'organizer'
-              ? 'Mandalay Trails'
-              : 'Aung Kyaw'}
-        </span>
-        <small>{active === 'admin' ? 'Chief Administrator' : 'Management Portal'}</small>
+        <InitialAvatar name={user?.name || active} />
+        <span>{user?.name || (active === 'admin' ? 'Admin User' : 'Mandalay Hiker')}</span>
+        <small>{user?.email || `${active} portal`}</small>
       </div>
     </aside>
   )
@@ -106,7 +101,7 @@ export function DateCard({
   return (
     <article className={muted ? 'date-card muted' : 'date-card'}>
       <div>
-        <span>Oct</span>
+        <span>Date</span>
         <strong>{date}</strong>
         <small>{time}</small>
       </div>
@@ -135,13 +130,23 @@ export function SavedTrail({
 }) {
   return (
     <article className="saved-trail">
-      <div style={bgStyle(image)}>
-        <button type="button">
-          <span className="material-symbols-outlined">bookmark</span>
-        </button>
-        <span>{meta}</span>
-        <h3>{title}</h3>
-      </div>
+      {image ? (
+        <div style={bgStyle(image)}>
+          <button type="button">
+            <span className="material-symbols-outlined">bookmark</span>
+          </button>
+          <span>{meta}</span>
+          <h3>{title}</h3>
+        </div>
+      ) : (
+        <div className="saved-trail-placeholder">
+          <button type="button">
+            <span className="material-symbols-outlined">bookmark</span>
+          </button>
+          <span>{meta}</span>
+          <h3>{title}</h3>
+        </div>
+      )}
       <p>
         {elev}
         <Link to="/trails">Trek Now</Link>
@@ -150,16 +155,22 @@ export function SavedTrail({
   )
 }
 
-export function UserCard({ name = 'Aung Kyaw' }: { name?: string }) {
+export function UserCard({
+  meta = 'Explorer account',
+  name = 'Mandalay Hiker',
+}: {
+  meta?: string
+  name?: string
+}) {
   return (
     <div className="user-card">
       <div>
         <strong>{name}</strong>
         <span>
-          <b>24</b> Total Treks
+          <b>{meta}</b>
         </span>
       </div>
-      <img src={IMG.avatar} alt={name} />
+      <InitialAvatar name={name} />
     </div>
   )
 }
@@ -169,7 +180,7 @@ export function OrganizerRow({ row }: { row: string[] }) {
   return (
     <div className="organizer-row">
       <span>
-        <img src={image} alt={name} />
+        {image ? <img src={image} alt={name} /> : <InitialAvatar name={name} />}
         <strong>{name}</strong>
       </span>
       <span>{date}</span>
@@ -185,6 +196,10 @@ export function OrganizerRow({ row }: { row: string[] }) {
       </button>
     </div>
   )
+}
+
+export function InitialAvatar({ name }: { name: string }) {
+  return <span className="initial-avatar">{name.trim().charAt(0).toUpperCase() || 'H'}</span>
 }
 
 export function Metric({

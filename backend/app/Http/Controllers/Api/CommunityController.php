@@ -11,7 +11,7 @@ class CommunityController extends Controller
 {
     public function posts()
     {
-        return Post::with(['user:id,name,role', 'comments.user:id,name'])->withCount('comments')->latest()->paginate(12);
+        return Post::with(['user:id,name,email,role', 'comments.user:id,name'])->withCount('comments')->latest()->paginate(12);
     }
 
     public function storePost(Request $request)

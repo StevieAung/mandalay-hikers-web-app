@@ -95,6 +95,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }).catch(() => null)
   }, [persistSession, token])
 
+  const syncAuthenticatedUser = useCallback((nextUser: User) => {
+    setUser(nextUser)
+  }, [])
+
   const applyForOrganizer = useCallback(
     (reason: string) => {
       if (!user || user.role !== 'explorer') return
@@ -138,15 +142,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const value = useMemo(
     () => ({
       user,
+      authToken: token,
       isLoading,
       applications,
       login,
       register,
       logout,
+      syncAuthenticatedUser,
       applyForOrganizer,
       approveOrganizer,
     }),
-    [applications, applyForOrganizer, approveOrganizer, isLoading, login, logout, register, user],
+    [
+      applications,
+      applyForOrganizer,
+      approveOrganizer,
+      isLoading,
+      login,
+      logout,
+      register,
+      syncAuthenticatedUser,
+      token,
+      user,
+    ],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

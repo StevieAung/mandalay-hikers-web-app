@@ -44,6 +44,11 @@ class User extends Authenticatable
         return $this->hasMany(OrganizerApplication::class);
     }
 
+    public function posts(): HasMany
+    {
+        return $this->hasMany(Post::class);
+    }
+
     /**
      * Get the attributes that should be cast.
      *

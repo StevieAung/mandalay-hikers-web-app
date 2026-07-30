@@ -13,7 +13,13 @@ class EventController extends Controller
         $query = Event::with(['organizer:id,name,role', 'trail:id,name,difficulty'])->withCount('participants');
 
         if ($request->query('mine')) {
-            $query->where('organizer_id', $request->user()->id);
+            $user = $request->user('sanctum');
+
+            if (! $user) {
+                abort(401, 'Authentication is required to view your events.');
+            }
+
+            $query->where('organizer_id', $user->id);
         }
 
         if ($status = $request->query('status')) {

@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 
-#[Fillable(['user_id', 'location', 'phone', 'avatar', 'bio'])]
+#[Fillable(['user_id', 'location', 'phone', 'avatar', 'cover_image', 'bio'])]
 class Profile extends Model
 {
     public function user()

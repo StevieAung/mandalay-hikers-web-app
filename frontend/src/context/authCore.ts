@@ -10,11 +10,13 @@ export type RegisterInput = {
 
 export type AuthContextValue = {
   user: User | null
+  authToken: string | null
   isLoading: boolean
   applications: OrganizerApplication[]
   login: (email: string, password: string) => Promise<User['role']>
   register: (input: RegisterInput) => Promise<User['role']>
   logout: () => Promise<void>
+  syncAuthenticatedUser: (user: User) => void
   applyForOrganizer: (reason: string) => void
   approveOrganizer: (applicationId: string) => void
 }
