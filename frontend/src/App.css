@@ -14,6 +14,100 @@ a {
   color: inherit;
 }
 
+.backend-warning {
+  align-items: center;
+  background: #fff3cd;
+  border: 1px solid rgba(145, 77, 0, 0.28);
+  box-shadow: 0 16px 36px rgba(5, 10, 8, 0.12);
+  color: var(--burnt);
+  display: grid;
+  gap: 14px;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  left: clamp(14px, 4vw, 58px);
+  padding: 12px 18px;
+  position: fixed;
+  right: clamp(14px, 4vw, 58px);
+  top: 96px;
+  z-index: 95;
+}
+
+.backend-warning p {
+  margin: 0;
+}
+
+.backend-warning strong {
+  color: var(--forest);
+  margin-right: 6px;
+}
+
+.backend-warning small {
+  color: var(--outline);
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.toast-viewport {
+  bottom: 24px;
+  display: grid;
+  gap: 12px;
+  max-width: min(420px, calc(100vw - 32px));
+  position: fixed;
+  right: 24px;
+  width: 420px;
+  z-index: 120;
+}
+
+.toast-card {
+  align-items: start;
+  background: var(--surface);
+  border: 1px solid var(--fog);
+  box-shadow: 0 22px 44px rgba(5, 10, 8, 0.14);
+  color: var(--stone);
+  display: grid;
+  gap: 14px;
+  grid-template-columns: 1fr auto;
+  padding: 18px;
+}
+
+.toast-card strong {
+  color: var(--forest);
+  display: block;
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.toast-card p {
+  line-height: 1.5;
+  margin: 8px 0 0;
+}
+
+.toast-card button {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  color: var(--outline);
+  cursor: pointer;
+  display: inline-flex;
+  justify-content: center;
+  padding: 0;
+}
+
+.toast-card.success {
+  border-left: 4px solid #208a3a;
+}
+
+.toast-card.warning {
+  border-left: 4px solid var(--orange);
+}
+
+.toast-card.error {
+  border-left: 4px solid var(--error);
+}
+
 .site-header {
   align-items: center;
   backdrop-filter: blur(18px);
@@ -254,9 +348,38 @@ html[lang='my'] :is(p, span, a, button, input, textarea, select, label) {
   width: 100%;
 }
 
+.button:disabled {
+  cursor: wait;
+  opacity: 0.64;
+}
+
 .icon-button {
   background: transparent;
   padding: 0;
+}
+
+.route-loading {
+  align-items: center;
+  color: var(--forest);
+  display: grid;
+  font-family: var(--mono);
+  gap: 12px;
+  justify-items: center;
+  letter-spacing: 0.12em;
+  min-height: 100svh;
+  padding: 120px 20px;
+  text-transform: uppercase;
+}
+
+.route-loading span {
+  animation: spin 950ms linear infinite;
+  color: var(--burnt);
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .menu-button {
@@ -2235,6 +2358,15 @@ textarea {
 }
 
 @media (max-width: 1050px) {
+  .backend-warning {
+    grid-template-columns: auto 1fr;
+    top: 88px;
+  }
+
+  .backend-warning small {
+    grid-column: 2;
+  }
+
   .site-header {
     grid-template-columns: 1fr auto;
     left: 12px;

@@ -11,7 +11,16 @@ type ProtectedRouteProps = {
 }
 
 export function ProtectedRoute({ children, loginPath = '/login', roles }: ProtectedRouteProps) {
-  const { user } = useAuth()
+  const { isLoading, user } = useAuth()
+
+  if (isLoading) {
+    return (
+      <main className="route-loading">
+        <span className="material-symbols-outlined">sync</span>
+        <strong>Restoring session</strong>
+      </main>
+    )
+  }
 
   if (!user) return <Navigate to={loginPath} replace />
   if (roles && !roles.includes(user.role))

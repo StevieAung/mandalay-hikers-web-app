@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Field } from '../components/FormField'
+import { useBackendStatus } from '../context/useBackendStatus'
 import { useAuth } from '../context/useAuth'
 import { IMG } from '../data/mockData'
 import type { AuthMode } from '../types'
@@ -8,6 +9,8 @@ import { dashboardPathForRole } from '../utils/routes'
 import { bgStyle } from '../utils/style'
 import { useLocale } from '../context/useLocale'
 import { LanguageToggle } from '../components/LanguageToggle'
+import { useToast } from '../context/useToast'
+import { ApiError } from '../utils/api'
 
 type AuthPageProps = {
   mode: AuthMode
@@ -26,21 +29,56 @@ export default function AuthPage({
   const isAdminLogin = intent === 'admin'
   const navigate = useNavigate()
   const { login, register } = useAuth()
+  const { checkBackend } = useBackendStatus()
   const { t } = useLocale()
+  const { showToast } = useToast()
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [form, setForm] = useState({
     name: '',
     email: defaultEmail,
     password: 'password',
+    passwordConfirmation: 'password',
   })
 
-  const submit = (event: React.FormEvent<HTMLFormElement>) => {
+  const submit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    if (isRegister) {
-      register({ name: form.name, email: form.email })
-      navigate(redirectTo ?? '/explorer-dashboard')
-    } else {
-      const role = login(form.email)
-      navigate(redirectTo ?? dashboardPathForRole(role))
+    const backendStatus = await checkBackend()
+
+    if (backendStatus === 'offline') {
+      showToast({
+        message: 'Start Laravel and XAMPP MySQL, then try again.',
+        title: 'Backend server is not reachable',
+        variant: 'error',
+      })
+      return
+    }
+
+    setIsSubmitting(true)
+
+    try {
+      if (isRegister) {
+        const role = await register({
+          name: form.name,
+          email: form.email,
+          password: form.password,
+          password_confirmation: form.passwordConfirmation,
+        })
+        navigate(redirectTo ?? dashboardPathForRole(role))
+      } else {
+        const role = await login(form.email, form.password)
+        navigate(redirectTo ?? dashboardPathForRole(role))
+      }
+    } catch (error) {
+      showToast({
+        message:
+          error instanceof ApiError
+            ? error.message
+            : 'Please check the form and try again in a moment.',
+        title: isRegister ? 'Registration failed' : 'Login failed',
+        variant: 'error',
+      })
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -78,8 +116,22 @@ export default function AuthPage({
             onChange={(value) => setForm({ ...form, password: value })}
             aside={t('auth.forgot')}
           />
-          <button className="button cta wide" type="submit">
-            {isRegister ? t('auth.create') : isAdminLogin ? t('auth.enterAdmin') : t('nav.signIn')}
+          {isRegister && (
+            <Field
+              label="Confirm Password"
+              type="password"
+              value={form.passwordConfirmation}
+              onChange={(value) => setForm({ ...form, passwordConfirmation: value })}
+            />
+          )}
+          <button className="button cta wide" disabled={isSubmitting} type="submit">
+            {isSubmitting
+              ? 'Connecting...'
+              : isRegister
+                ? t('auth.create')
+                : isAdminLogin
+                  ? t('auth.enterAdmin')
+                  : t('nav.signIn')}
           </button>
           {!isAdminLogin && (
             <>

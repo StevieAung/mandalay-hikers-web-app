@@ -5,6 +5,7 @@ export type AuthMode = 'login' | 'register'
 export type TrailDifficulty = 'Easy' | 'Moderate' | 'Hard'
 
 export type User = {
+  id?: number
   name: string
   email: string
   role: UserRole

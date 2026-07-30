@@ -15,6 +15,18 @@ React Router + TypeScript + Tailwind CSS + Vite frontend rebuilt from the provid
 
 ## Run Locally
 
+Create a frontend environment file if it does not exist:
+
+```bash
+cp .env.example .env
+```
+
+Use this API base URL for the local Laravel server:
+
+```env
+VITE_API_BASE_URL=http://127.0.0.1:8000
+```
+
 ```bash
 cd /Applications/XAMPP/xamppfiles/htdocs/hiking_web_app/frontend
 pnpm install
@@ -28,6 +40,14 @@ http://127.0.0.1:5173/
 ```
 
 If Vite chooses another port, use the URL shown in the terminal.
+
+For full app testing, keep all required services running:
+
+- XAMPP MySQL
+- Laravel backend from `backend/` with `php artisan serve`
+- React frontend from `frontend/` with `pnpm dev`
+
+If Laravel is stopped or unreachable, the frontend shows a warning banner and blocks login/register until the backend responds again.
 
 ## Pages
 

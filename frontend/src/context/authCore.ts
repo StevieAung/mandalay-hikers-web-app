@@ -4,14 +4,17 @@ import type { OrganizerApplication, User } from '../types'
 export type RegisterInput = {
   name: string
   email: string
+  password: string
+  password_confirmation: string
 }
 
 export type AuthContextValue = {
   user: User | null
+  isLoading: boolean
   applications: OrganizerApplication[]
-  login: (email: string) => User['role']
-  register: (input: RegisterInput) => void
-  logout: () => void
+  login: (email: string, password: string) => Promise<User['role']>
+  register: (input: RegisterInput) => Promise<User['role']>
+  logout: () => Promise<void>
   applyForOrganizer: (reason: string) => void
   approveOrganizer: (applicationId: string) => void
 }

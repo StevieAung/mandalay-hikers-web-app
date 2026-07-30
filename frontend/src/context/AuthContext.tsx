@@ -1,54 +1,99 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
-import type { OrganizerApplication, User, UserRole } from '../types'
+import type { OrganizerApplication, User } from '../types'
+import { apiRequest } from '../utils/api'
 import { AuthContext, readJson } from './authCore'
 import type { RegisterInput } from './authCore'
 
+const TOKEN_STORAGE_KEY = 'hikers_auth_token'
+
+type AuthResponse = {
+  token: string
+  user: User
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(() => readJson<User | null>('hikers_user', null))
+  const [user, setUser] = useState<User | null>(null)
+  const [token, setToken] = useState<string | null>(() => localStorage.getItem(TOKEN_STORAGE_KEY))
+  const [isLoading, setIsLoading] = useState(Boolean(token))
   const [applications, setApplications] = useState<OrganizerApplication[]>(() =>
     readJson<OrganizerApplication[]>('hikers_organizer_applications', []),
   )
 
-  const persistUser = (nextUser: User | null) => {
+  const persistSession = useCallback((nextUser: User | null, nextToken: string | null) => {
     setUser(nextUser)
-    if (nextUser) {
-      localStorage.setItem('hikers_user', JSON.stringify(nextUser))
+    setToken(nextToken)
+    localStorage.removeItem('hikers_user')
+
+    if (nextToken) {
+      localStorage.setItem(TOKEN_STORAGE_KEY, nextToken)
       return
     }
-    localStorage.removeItem('hikers_user')
-  }
+
+    localStorage.removeItem(TOKEN_STORAGE_KEY)
+  }, [])
 
   const persistApplications = (nextApplications: OrganizerApplication[]) => {
     setApplications(nextApplications)
     localStorage.setItem('hikers_organizer_applications', JSON.stringify(nextApplications))
   }
 
+  useEffect(() => {
+    if (!token) {
+      return
+    }
+
+    const restoreSession = async () => {
+      try {
+        const nextUser = await apiRequest<User>('/api/auth/me', { token })
+        setUser(nextUser)
+      } catch {
+        persistSession(null, null)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    void restoreSession()
+  }, [persistSession, token])
+
   const login = useCallback(
-    (email: string) => {
-      const approvedForOrganizer = applications.some(
-        (application) => application.email === email && application.status === 'approved',
-      )
-      const role: UserRole = email.includes('admin')
-        ? 'admin'
-        : email.includes('organizer') || approvedForOrganizer
-          ? 'organizer'
-          : 'explorer'
-      persistUser({
-        email,
-        name: role === 'admin' ? 'Zaw Min' : role === 'organizer' ? 'Mandalay Trails' : 'Aung Kyaw',
-        role,
+    async (email: string, password: string) => {
+      const response = await apiRequest<AuthResponse>('/api/auth/login', {
+        body: JSON.stringify({ email, password }),
+        method: 'POST',
       })
-      return role
+
+      persistSession(response.user, response.token)
+      return response.user.role
     },
-    [applications],
+    [persistSession],
   )
 
-  const register = useCallback(({ name, email }: RegisterInput) => {
-    persistUser({ name: name || 'New Explorer', email, role: 'explorer' })
-  }, [])
+  const register = useCallback(
+    async (input: RegisterInput) => {
+      const response = await apiRequest<AuthResponse>('/api/auth/register', {
+        body: JSON.stringify(input),
+        method: 'POST',
+      })
 
-  const logout = useCallback(() => persistUser(null), [])
+      persistSession(response.user, response.token)
+      return response.user.role
+    },
+    [persistSession],
+  )
+
+  const logout = useCallback(async () => {
+    const activeToken = token
+    persistSession(null, null)
+
+    if (!activeToken) return
+
+    await apiRequest<null>('/api/auth/logout', {
+      method: 'POST',
+      token: activeToken,
+    }).catch(() => null)
+  }, [persistSession, token])
 
   const applyForOrganizer = useCallback(
     (reason: string) => {
@@ -84,15 +129,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       persistApplications(nextApplications)
 
       if (user && approved?.email === user.email) {
-        persistUser({ ...user, role: 'organizer' })
+        setUser({ ...user, role: 'organizer' })
       }
     },
     [applications, user],
   )
 
   const value = useMemo(
-    () => ({ user, applications, login, register, logout, applyForOrganizer, approveOrganizer }),
-    [applications, applyForOrganizer, approveOrganizer, login, logout, register, user],
+    () => ({
+      user,
+      isLoading,
+      applications,
+      login,
+      register,
+      logout,
+      applyForOrganizer,
+      approveOrganizer,
+    }),
+    [applications, applyForOrganizer, approveOrganizer, isLoading, login, logout, register, user],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
