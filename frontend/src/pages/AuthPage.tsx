@@ -1,11 +1,11 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { Field } from '../components/FormField'
 import { useBackendStatus } from '../context/useBackendStatus'
 import { useAuth } from '../context/useAuth'
 import { IMG } from '../data/mockData'
 import type { AuthMode } from '../types'
-import { dashboardPathForRole } from '../utils/routes'
+import { dashboardPathForRole, safeLocalReturnPath } from '../utils/routes'
 import { bgStyle } from '../utils/style'
 import { useLocale } from '../context/useLocale'
 import { LanguageToggle } from '../components/LanguageToggle'
@@ -28,6 +28,7 @@ export default function AuthPage({
   const isRegister = mode === 'register'
   const isAdminLogin = intent === 'admin'
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const { login, register } = useAuth()
   const { checkBackend } = useBackendStatus()
   const { t } = useLocale()
@@ -39,6 +40,11 @@ export default function AuthPage({
     password: 'password',
     passwordConfirmation: 'password',
   })
+  const returnPath = safeLocalReturnPath(redirectTo ?? searchParams.get('next'))
+  const alternateAuthPath = isRegister ? '/login' : '/register'
+  const alternateAuthUrl = returnPath
+    ? `${alternateAuthPath}?next=${encodeURIComponent(returnPath)}`
+    : alternateAuthPath
 
   const submit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -63,10 +69,10 @@ export default function AuthPage({
           password: form.password,
           password_confirmation: form.passwordConfirmation,
         })
-        navigate(redirectTo ?? dashboardPathForRole(role))
+        navigate(returnPath ?? dashboardPathForRole(role))
       } else {
         const role = await login(form.email, form.password)
-        navigate(redirectTo ?? dashboardPathForRole(role))
+        navigate(returnPath ?? dashboardPathForRole(role))
       }
     } catch (error) {
       showToast({
@@ -136,7 +142,7 @@ export default function AuthPage({
           {!isAdminLogin && (
             <p className="auth-switch">
               {isRegister ? t('auth.already') : t('auth.new')}{' '}
-              <Link to={isRegister ? '/login' : '/register'}>
+              <Link to={alternateAuthUrl}>
                 {isRegister ? t('nav.signIn') : t('auth.createAccount')}
               </Link>
             </p>

@@ -1,2 +1,5 @@
 *
 !.gitignore
+!trails/
+!trails/mock/
+!trails/mock/*.jpg

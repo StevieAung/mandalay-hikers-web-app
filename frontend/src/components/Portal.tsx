@@ -1,5 +1,6 @@
+import { useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, NavLink } from 'react-router-dom'
 import { useAuth } from '../context/useAuth'
 import { dashboardPathForRole } from '../utils/routes'
 import { bgStyle } from '../utils/style'
@@ -7,29 +8,57 @@ import type { UserRole } from '../types'
 import { Footer } from './Footer'
 import { Header } from './PublicLayout'
 
-export function Sidebar({ active }: { active: UserRole }) {
+export function Sidebar({ active, onNavigate }: { active: UserRole; onNavigate?: () => void }) {
   const { user } = useAuth()
   const navByRole = {
     explorer: [['explorer', '/explorer-dashboard', 'explore', 'Explorer']],
     organizer: [['organizer', '/organizer-dashboard', 'event_note', 'Organizer']],
-    admin: [['admin', '/admin', 'admin_panel_settings', 'Admin']],
+    admin: [
+      ['overview', '/admin', 'dashboard', 'Overview'],
+      ['applications', '/admin/applications', 'how_to_reg', 'Applications'],
+      ['users', '/admin/users', 'group', 'Users'],
+      ['trails', '/admin/trails', 'hiking', 'Trails'],
+      ['events', '/admin/events', 'event', 'Events'],
+      ['posts', '/admin/posts', 'forum', 'Posts'],
+      ['reports', '/admin/reports', 'flag', 'Reports'],
+    ],
   } as const
   const nav = navByRole[active]
 
   return (
     <aside className="portal-sidebar">
-      <div>
-        <Link className="portal-logo" to={dashboardPathForRole(active)}>
-          {active === 'admin' ? 'Mandalay' : 'Hikers'}
-        </Link>
-        <p>Management Portal</p>
-      </div>
+      {active === 'admin' ? (
+        <div className="sidebar-user admin-sidebar-user">
+          <span>{user?.name || 'Admin User'}</span>
+          <small>{user?.email || 'admin portal'}</small>
+        </div>
+      ) : (
+        <div>
+          <Link className="portal-logo" to={dashboardPathForRole(active)}>
+            Hikers
+          </Link>
+          <p>Management Portal</p>
+        </div>
+      )}
       <nav>
         {nav.map(([key, to, icon, label]) => (
-          <Link className={active === key ? 'active' : ''} to={to} key={key}>
+          <NavLink
+            className={({ isActive }) =>
+              [
+                isActive || (active !== 'admin' && active === key) ? 'active' : '',
+                active === 'admin' && key === 'reports' ? 'danger' : '',
+              ]
+                .filter(Boolean)
+                .join(' ')
+            }
+            end={to === '/admin'}
+            onClick={onNavigate}
+            to={to}
+            key={key}
+          >
             <span className="material-symbols-outlined">{icon}</span>
             {label}
-          </Link>
+          </NavLink>
         ))}
       </nav>
       {active === 'organizer' && (
@@ -37,24 +66,75 @@ export function Sidebar({ active }: { active: UserRole }) {
           New Trek
         </Link>
       )}
-      <div className="sidebar-user">
-        <InitialAvatar name={user?.name || active} />
-        <span>{user?.name || (active === 'admin' ? 'Admin User' : 'Mandalay Hiker')}</span>
-        <small>{user?.email || `${active} portal`}</small>
-      </div>
+      {active !== 'admin' && (
+        <div className="sidebar-user">
+          <InitialAvatar name={user?.name || active} />
+          <span>{user?.name || 'Mandalay Hiker'}</span>
+          <small>{user?.email || `${active} portal`}</small>
+        </div>
+      )}
     </aside>
   )
 }
 
 export function PortalShell({ active, children }: { active: UserRole; children: ReactNode }) {
+  const [drawerOpen, setDrawerOpen] = useState(false)
+  const drawerRef = useRef<HTMLDivElement | null>(null)
+
+  useEffect(() => {
+    if (!drawerOpen) return
+
+    const previousActive =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null
+    const firstLink = drawerRef.current?.querySelector<HTMLElement>('a, button')
+    firstLink?.focus()
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setDrawerOpen(false)
+        previousActive?.focus()
+      }
+    }
+
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [drawerOpen])
+
   return (
     <>
       <Header />
+      {active === 'admin' && (
+        <button className="admin-drawer-trigger" onClick={() => setDrawerOpen(true)} type="button">
+          <span className="material-symbols-outlined">menu</span>
+          Admin Menu
+        </button>
+      )}
       <main className="portal-shell">
         <Sidebar active={active} />
         <section className="portal-content">{children}</section>
       </main>
-      <Footer />
+      {active === 'admin' && drawerOpen && (
+        <div className="admin-drawer-layer" role="presentation">
+          <button
+            aria-label="Close admin menu"
+            className="admin-drawer-backdrop"
+            onClick={() => setDrawerOpen(false)}
+            type="button"
+          />
+          <div aria-label="Admin navigation" className="admin-drawer" ref={drawerRef}>
+            <button
+              className="admin-drawer-close"
+              onClick={() => setDrawerOpen(false)}
+              type="button"
+            >
+              <span className="material-symbols-outlined">close</span>
+              Close
+            </button>
+            <Sidebar active={active} onNavigate={() => setDrawerOpen(false)} />
+          </div>
+        </div>
+      )}
+      {active !== 'admin' && <Footer />}
     </>
   )
 }

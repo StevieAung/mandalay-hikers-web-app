@@ -1,18 +1,35 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Footer } from '../components/Footer'
 import { TrailListingCard } from '../components/Cards'
-import { useLocalizedContent } from '../data/useLocalizedContent'
 import { useLocale } from '../context/useLocale'
+import type { ApiTrail, PaginatedResponse } from '../types/api'
+import { ApiError, apiRequest } from '../utils/api'
 
 export default function TrailDiscoveryPage() {
   const { t } = useLocale()
-  const { trails } = useLocalizedContent()
+  const [trails, setTrails] = useState<ApiTrail[]>([])
   const [difficulty, setDifficulty] = useState('Moderate')
+  const [error, setError] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    const loadTrails = async () => {
+      try {
+        const response = await apiRequest<PaginatedResponse<ApiTrail>>('/api/trails')
+        setTrails(response.data)
+        setError(null)
+      } catch (requestError) {
+        setError(requestError instanceof ApiError ? requestError.message : t('trails.loadError'))
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    void loadTrails()
+  }, [t])
+
   const filtered =
-    difficulty === 'All'
-      ? trails
-      : trails.filter((trail) => (trail.difficultyKey ?? trail.difficulty) === difficulty)
-  const visible = filtered.length ? filtered : trails
+    difficulty === 'All' ? trails : trails.filter((trail) => trail.difficulty === difficulty)
 
   return (
     <main>
@@ -81,15 +98,16 @@ export default function TrailDiscoveryPage() {
             </button>
           </aside>
           <div className="trail-card-grid">
-            {visible.map((trail) => (
+            {isLoading && <p className="table-empty">{t('trails.loading')}</p>}
+            {error && <p className="table-empty danger">{error}</p>}
+            {!isLoading && !error && !filtered.length && (
+              <p className="table-empty">{t('trails.empty')}</p>
+            )}
+            {filtered.map((trail) => (
               <TrailListingCard key={trail.id} trail={trail} />
             ))}
           </div>
         </div>
-        <button className="load-more" type="button">
-          <span className="material-symbols-outlined">refresh</span>
-          {t('trails.load')}
-        </button>
       </section>
       <Footer />
     </main>

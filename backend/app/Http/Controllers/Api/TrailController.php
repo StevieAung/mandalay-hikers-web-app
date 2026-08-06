@@ -4,13 +4,17 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Trail;
+use App\Models\TrailImage;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class TrailController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Trail::query()->withAvg('ratings', 'score')->withCount('events');
+        $query = Trail::query()
+            ->withAvg('ratings', 'score')
+            ->withCount(['events', 'ratings']);
 
         if ($search = $request->query('search')) {
             $query->where(fn ($q) => $q->where('name', 'like', "%{$search}%")->orWhere('location', 'like', "%{$search}%"));
@@ -25,7 +29,16 @@ class TrailController extends Controller
 
     public function show(Trail $trail)
     {
-        return $trail->load(['images', 'ratings.user:id,name', 'events.organizer:id,name']);
+        return $trail
+            ->loadAvg('ratings', 'score')
+            ->loadCount('ratings')
+            ->load([
+                'images',
+                'ratings' => fn ($query) => $query
+                    ->latest()
+                    ->with('user:id,name,role'),
+                'events.organizer:id,name',
+            ]);
     }
 
     public function store(Request $request)
@@ -33,25 +46,43 @@ class TrailController extends Controller
         $data = $this->validated($request);
         $data['cover_image'] = $this->storeImage($request, 'cover_image', 'trails');
 
-        return response()->json(Trail::create($data), 201);
+        $trail = Trail::create($data);
+        $this->storeGalleryImages($request, $trail);
+
+        return response()->json($trail->load('images'), 201);
     }
 
     public function update(Request $request, Trail $trail)
     {
         $data = $this->validated($request, true);
 
-        if ($request->has('cover_image')) {
+        if ($request->hasFile('cover_image')) {
             $data['cover_image'] = $this->storeImage($request, 'cover_image', 'trails');
         }
 
         $trail->update($data);
+        $this->storeGalleryImages($request, $trail);
 
-        return $trail->fresh();
+        return $trail->fresh()->load('images');
     }
 
     public function destroy(Trail $trail)
     {
         $trail->delete();
+
+        return response()->noContent();
+    }
+
+    public function destroyImage(Trail $trail, TrailImage $image)
+    {
+        abort_unless($image->trail_id === $trail->id, 404);
+
+        $path = $image->getRawOriginal('image_path');
+        $image->delete();
+
+        if ($path && ! str_starts_with($path, 'http')) {
+            Storage::disk('public')->delete($path);
+        }
 
         return response()->noContent();
     }
@@ -74,10 +105,17 @@ class TrailController extends Controller
     {
         $data = $request->validate([
             'score' => ['required', 'integer', 'between:1,5'],
-            'review' => ['nullable', 'string'],
+            'review' => ['nullable', 'string', 'max:1000'],
         ]);
 
         return response()->json($trail->ratings()->updateOrCreate(['user_id' => $request->user()->id], $data));
+    }
+
+    public function deleteRating(Request $request, Trail $trail)
+    {
+        $trail->ratings()->where('user_id', $request->user()->id)->delete();
+
+        return response()->noContent();
     }
 
     public function report(Request $request, Trail $trail)
@@ -94,17 +132,30 @@ class TrailController extends Controller
     {
         $required = $partial ? 'sometimes' : 'required';
 
-        return $request->validate([
+        $data = $request->validate([
             'name' => [$required, 'string', 'max:255'],
             'location' => [$required, 'string', 'max:255'],
             'difficulty' => [$required, 'in:Easy,Moderate,Hard'],
             'distance_km' => [$required, 'numeric', 'min:0'],
             'duration' => [$required, 'string', 'max:120'],
             'elevation_m' => ['sometimes', 'integer', 'min:0'],
-            'cover_image' => ['nullable'],
+            'cover_image' => ['nullable', 'image', 'mimes:jpeg,jpg,png,webp', 'max:6144'],
+            'gallery_images' => ['nullable', 'array'],
+            'gallery_images.*' => ['image', 'mimes:jpeg,jpg,png,webp', 'max:6144'],
             'description' => [$required, 'string'],
             'required_equipment' => ['nullable', 'string'],
             'best_season' => ['nullable', 'string', 'max:120'],
         ]);
+
+        return $data;
+    }
+
+    private function storeGalleryImages(Request $request, Trail $trail): void
+    {
+        foreach ($request->file('gallery_images', []) as $image) {
+            $trail->images()->create([
+                'image_path' => $image->store('trails/gallery', 'public'),
+            ]);
+        }
     }
 }

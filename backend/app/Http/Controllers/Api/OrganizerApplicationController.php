@@ -8,9 +8,21 @@ use Illuminate\Http\Request;
 
 class OrganizerApplicationController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return OrganizerApplication::with('user:id,name,email,role')->latest()->paginate(20);
+        $query = OrganizerApplication::with('user:id,name,email,role');
+
+        if ($search = $request->query('search')) {
+            $query->where(fn ($q) => $q
+                ->where('reason', 'like', "%{$search}%")
+                ->orWhereHas('user', fn ($user) => $user->where('name', 'like', "%{$search}%")->orWhere('email', 'like', "%{$search}%")));
+        }
+
+        if ($status = $request->query('status')) {
+            $query->where('status', $status);
+        }
+
+        return $query->latest()->paginate(20);
     }
 
     public function store(Request $request)

@@ -28,6 +28,7 @@ Route::middleware(['auth:sanctum', 'not.banned'])->group(function () {
     Route::post('/trails/{trail}/favorite', [TrailController::class, 'favorite']);
     Route::delete('/trails/{trail}/favorite', [TrailController::class, 'unfavorite']);
     Route::post('/trails/{trail}/ratings', [TrailController::class, 'rate']);
+    Route::delete('/trails/{trail}/ratings', [TrailController::class, 'deleteRating']);
     Route::post('/trails/{trail}/reports', [TrailController::class, 'report']);
 
     Route::post('/events/{event}/join', [EventController::class, 'join']);
@@ -53,6 +54,7 @@ Route::middleware(['auth:sanctum', 'not.banned'])->group(function () {
         Route::get('/users', [AdminController::class, 'users']);
         Route::patch('/users/{user}', [AdminController::class, 'updateUser']);
         Route::apiResource('/trails', TrailController::class)->except(['index', 'show']);
+        Route::delete('/trails/{trail}/images/{image}', [TrailController::class, 'destroyImage']);
         Route::get('/events', [AdminController::class, 'events']);
         Route::patch('/events/{event}/feature', [AdminController::class, 'featureEvent']);
         Route::get('/organizer-applications', [OrganizerApplicationController::class, 'index']);
@@ -60,5 +62,6 @@ Route::middleware(['auth:sanctum', 'not.banned'])->group(function () {
         Route::get('/reports', [AdminController::class, 'reports']);
         Route::patch('/reports/{report}', [AdminController::class, 'updateReport']);
         Route::get('/posts', [AdminController::class, 'posts']);
+        Route::delete('/posts/{post}', [AdminController::class, 'deletePost']);
     });
 });

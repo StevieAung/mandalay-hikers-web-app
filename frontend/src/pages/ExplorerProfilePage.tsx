@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import type { IconComponent } from 'reicon-react/createIcon'
 import Camera from 'reicon-react/icons/Camera'
 import MapPoint2 from 'reicon-react/icons/MapPoint2'
 import MessageDots from 'reicon-react/icons/MessageDots'
@@ -14,24 +13,6 @@ import { useLocale } from '../context/useLocale'
 import type { ProfilePayload } from '../types/api'
 import { ApiError, apiRequest } from '../utils/api'
 import { formatDistance } from '../utils/format'
-
-function ProfileStat({
-  icon: Icon,
-  label,
-  value,
-}: {
-  icon: IconComponent
-  label: string
-  value: string
-}) {
-  return (
-    <article className="profile-stat">
-      <Icon size={24} />
-      <span>{label}</span>
-      <strong>{value}</strong>
-    </article>
-  )
-}
 
 export default function ExplorerProfilePage() {
   const { t } = useLocale()
@@ -83,6 +64,23 @@ export default function ExplorerProfilePage() {
         isOwner={isOwner}
         onProfileSaved={setProfile}
         profile={profile}
+        stats={[
+          {
+            icon: <Route size={22} />,
+            label: t('profile.completed'),
+            value: String(user.joined_events_count ?? 0),
+          },
+          {
+            icon: <Camera size={22} />,
+            label: t('profile.posts'),
+            value: String(user.posts_count ?? 0),
+          },
+          {
+            icon: <Star size={22} />,
+            label: t('profile.saved'),
+            value: String(user.favorites_count ?? 0),
+          },
+        ]}
       />
       <section className="profile-layout">
         <aside className="profile-side">
@@ -105,23 +103,6 @@ export default function ExplorerProfilePage() {
           </Link>
         </aside>
         <div className="profile-main">
-          <div className="profile-stats">
-            <ProfileStat
-              icon={Route}
-              label={t('profile.completed')}
-              value={String(user.joined_events_count ?? 0)}
-            />
-            <ProfileStat
-              icon={Camera}
-              label={t('profile.posts')}
-              value={String(user.posts_count ?? 0)}
-            />
-            <ProfileStat
-              icon={Star}
-              label={t('profile.saved')}
-              value={String(user.favorites_count ?? 0)}
-            />
-          </div>
           <section className="profile-panel">
             <div className="profile-panel-head">
               <h2>{t('profile.favorite')}</h2>

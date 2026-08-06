@@ -76,7 +76,7 @@ function App() {
                     </ProtectedRoute>
                   }
                 />
-                <Route path="/admin" element={<AdminEntryPage />} />
+                <Route path="/admin/*" element={<AdminEntryPage />} />
                 <Route path="/dashboard" element={<Navigate to="/explorer-dashboard" replace />} />
                 <Route path="/organizer" element={<Navigate to="/organizer-dashboard" replace />} />
                 <Route path="*" element={<Navigate to="/" replace />} />

@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import type { IconComponent } from 'reicon-react/createIcon'
 import CalendarDate from 'reicon-react/icons/CalendarDate'
 import MapPoint2 from 'reicon-react/icons/MapPoint2'
 import RouteTrack from 'reicon-react/icons/RouteTrack'
@@ -13,24 +12,6 @@ import { useLocale } from '../context/useLocale'
 import type { ApiEvent, ProfilePayload } from '../types/api'
 import { ApiError, apiRequest } from '../utils/api'
 import { formatDate } from '../utils/format'
-
-function OrganizerStat({
-  icon: Icon,
-  label,
-  value,
-}: {
-  icon: IconComponent
-  label: string
-  value: string
-}) {
-  return (
-    <article className="profile-stat organizer">
-      <Icon size={24} weight="Filled" />
-      <span>{label}</span>
-      <strong>{value}</strong>
-    </article>
-  )
-}
 
 function HostedEventCard({ event }: { event: ApiEvent }) {
   return (
@@ -109,6 +90,23 @@ export default function OrganizerProfilePage() {
         isOwner={isOwner}
         onProfileSaved={setProfile}
         profile={profile}
+        stats={[
+          {
+            icon: <CalendarDate size={22} weight="Filled" />,
+            label: t('profile.hosted'),
+            value: String(hostedEvents.length),
+          },
+          {
+            icon: <Users size={22} weight="Filled" />,
+            label: t('profile.participants'),
+            value: String(participantTotal),
+          },
+          {
+            icon: <RouteTrack size={22} weight="Filled" />,
+            label: 'Role',
+            value: user.role,
+          },
+        ]}
       />
       <section className="profile-layout">
         <aside className="profile-side">
@@ -136,19 +134,6 @@ export default function OrganizerProfilePage() {
           </Link>
         </aside>
         <div className="profile-main">
-          <div className="profile-stats">
-            <OrganizerStat
-              icon={CalendarDate}
-              label={t('profile.hosted')}
-              value={String(hostedEvents.length)}
-            />
-            <OrganizerStat
-              icon={Users}
-              label={t('profile.participants')}
-              value={String(participantTotal)}
-            />
-            <OrganizerStat icon={RouteTrack} label="Role" value={user.role} />
-          </div>
           <section className="profile-panel">
             <div className="profile-panel-head">
               <h2>{t('profile.upcoming')}</h2>

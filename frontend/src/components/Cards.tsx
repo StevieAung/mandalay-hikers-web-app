@@ -1,9 +1,12 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import type { CommunityPost, Trail, TrekEvent } from '../types'
+import type { ApiTrail } from '../types/api'
+import { IMG } from '../data/mockData'
 import { bgStyle } from '../utils/style'
 import { useLocale } from '../context/useLocale'
 import { formatEventDate } from '../utils/date'
+import { formatDistance } from '../utils/format'
 
 export function OverlayTrail({ trail }: { trail: Trail }) {
   return (
@@ -17,25 +20,23 @@ export function OverlayTrail({ trail }: { trail: Trail }) {
   )
 }
 
-export function TrailListingCard({ trail }: { trail: Trail }) {
+export function TrailListingCard({ trail }: { trail: ApiTrail }) {
   const { t } = useLocale()
   return (
     <Link className="trail-list-card" to={`/trails/${trail.id}`}>
       <div className="image-wrap">
-        <img src={trail.image} alt={trail.name} />
-        <span className={`badge ${(trail.difficultyKey ?? trail.difficulty).toLowerCase()}`}>
-          {trail.badge}
-        </span>
+        <img src={trail.cover_image || IMG.trailA} alt={trail.name} />
+        <span className={`badge ${trail.difficulty.toLowerCase()}`}>{trail.difficulty}</span>
       </div>
       <div>
         <h2>{trail.name}</h2>
-        <p>{trail.summary}</p>
+        <p>{trail.description}</p>
         <div className="card-data">
           <span>
-            {t('card.distance')} <strong>{trail.distance}</strong>
+            {t('card.distance')} <strong>{formatDistance(trail.distance_km)}</strong>
           </span>
           <span>
-            {t('card.elevation')} <strong>{trail.elevation}</strong>
+            {t('card.elevation')} <strong>{trail.elevation_m} m</strong>
           </span>
           <span className="arrow">-&gt;</span>
         </div>

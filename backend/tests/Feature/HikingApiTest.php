@@ -5,9 +5,12 @@ namespace Tests\Feature;
 use App\Models\Event;
 use App\Models\OrganizerApplication;
 use App\Models\Post;
+use App\Models\Rating;
 use App\Models\Trail;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class HikingApiTest extends TestCase
@@ -86,6 +89,137 @@ class HikingApiTest extends TestCase
 
         $this->actingAs($user)->postJson("/api/posts/{$post['id']}/comments", ['body' => 'Thanks for the notes.'])->assertCreated();
         $this->assertDatabaseHas(Post::class, ['title' => 'Good morning climb']);
+    }
+
+    public function test_trail_reviews_require_authentication_and_validate_payloads(): void
+    {
+        $trail = Trail::create($this->trailData());
+        $user = User::factory()->create();
+
+        $this->postJson("/api/trails/{$trail->id}/ratings", ['score' => 5])->assertUnauthorized();
+        $this->deleteJson("/api/trails/{$trail->id}/ratings")->assertUnauthorized();
+
+        $this->actingAs($user)->postJson("/api/trails/{$trail->id}/ratings", ['score' => 0])->assertUnprocessable();
+        $this->actingAs($user)->postJson("/api/trails/{$trail->id}/ratings", ['score' => 6])->assertUnprocessable();
+        $this->actingAs($user)->postJson("/api/trails/{$trail->id}/ratings", [
+            'score' => 5,
+            'review' => str_repeat('a', 1001),
+        ])->assertUnprocessable();
+
+        $this->actingAs($user)->postJson("/api/trails/{$trail->id}/ratings", [
+            'score' => 4,
+            'review' => null,
+        ])->assertOk()->assertJsonPath('score', 4)->assertJsonPath('review', null);
+    }
+
+    public function test_user_can_create_and_update_one_review_per_trail(): void
+    {
+        $trail = Trail::create($this->trailData());
+        $user = User::factory()->create();
+
+        $this->actingAs($user)->postJson("/api/trails/{$trail->id}/ratings", [
+            'score' => 3,
+            'review' => 'Rocky but manageable.',
+        ])->assertOk();
+
+        $this->actingAs($user)->postJson("/api/trails/{$trail->id}/ratings", [
+            'score' => 5,
+            'review' => 'Even better on the second visit.',
+        ])->assertOk()->assertJsonPath('score', 5);
+
+        $this->assertDatabaseCount(Rating::class, 1);
+        $this->assertDatabaseHas(Rating::class, [
+            'trail_id' => $trail->id,
+            'user_id' => $user->id,
+            'score' => 5,
+            'review' => 'Even better on the second visit.',
+        ]);
+    }
+
+    public function test_trail_detail_returns_rating_aggregates_and_newest_reviews_first(): void
+    {
+        $trail = Trail::create($this->trailData());
+        $olderUser = User::factory()->create(['name' => 'Older Reviewer']);
+        $newerUser = User::factory()->create(['name' => 'Newer Reviewer', 'role' => 'organizer']);
+
+        $older = $trail->ratings()->create(['user_id' => $olderUser->id, 'score' => 3, 'review' => 'First review.']);
+        $older->forceFill(['created_at' => now()->subDay(), 'updated_at' => now()->subDay()])->save();
+        $newer = $trail->ratings()->create(['user_id' => $newerUser->id, 'score' => 5, 'review' => 'Latest review.']);
+        $newer->forceFill(['created_at' => now(), 'updated_at' => now()])->save();
+
+        $this->getJson("/api/trails/{$trail->id}")
+            ->assertOk()
+            ->assertJsonPath('ratings_count', 2)
+            ->assertJsonPath('ratings_avg_score', 4)
+            ->assertJsonPath('ratings.0.review', 'Latest review.')
+            ->assertJsonPath('ratings.0.user.name', 'Newer Reviewer')
+            ->assertJsonPath('ratings.0.user.role', 'organizer')
+            ->assertJsonPath('ratings.1.review', 'First review.');
+
+        $this->getJson('/api/trails')->assertOk()->assertJsonPath('data.0.ratings_count', 2);
+    }
+
+    public function test_user_can_delete_only_their_own_trail_review(): void
+    {
+        $trail = Trail::create($this->trailData());
+        $firstUser = User::factory()->create();
+        $secondUser = User::factory()->create();
+        $trail->ratings()->create(['user_id' => $firstUser->id, 'score' => 5, 'review' => 'Mine.']);
+        $trail->ratings()->create(['user_id' => $secondUser->id, 'score' => 4, 'review' => 'Keep this.']);
+
+        $this->actingAs($firstUser)->deleteJson("/api/trails/{$trail->id}/ratings")->assertNoContent();
+
+        $this->assertDatabaseMissing(Rating::class, ['trail_id' => $trail->id, 'user_id' => $firstUser->id]);
+        $this->assertDatabaseHas(Rating::class, ['trail_id' => $trail->id, 'user_id' => $secondUser->id]);
+        $this->actingAs($firstUser)->deleteJson("/api/trails/{$trail->id}/ratings")->assertNoContent();
+    }
+
+    public function test_admin_can_upload_and_manage_trail_images(): void
+    {
+        Storage::fake('public');
+        $admin = User::factory()->create(['role' => 'admin']);
+        $cover = UploadedFile::fake()->image('cover.jpg');
+        $galleryOne = UploadedFile::fake()->image('gallery-one.png');
+        $galleryTwo = UploadedFile::fake()->image('gallery-two.webp');
+
+        $created = $this->actingAs($admin)->post('/api/admin/trails', array_merge($this->trailData(), [
+            'cover_image' => $cover,
+            'gallery_images' => [$galleryOne, $galleryTwo],
+        ]))->assertCreated()->assertJsonCount(2, 'images')->json();
+
+        $trail = Trail::findOrFail($created['id']);
+        $this->assertStringStartsWith('trails/', $trail->getRawOriginal('cover_image'));
+        Storage::disk('public')->assertExists($trail->getRawOriginal('cover_image'));
+        $this->assertCount(2, $trail->images);
+        $this->assertStringContainsString('/storage/trails/', $created['cover_image']);
+        $this->assertStringContainsString('/storage/trails/gallery/', $created['images'][0]['image_path']);
+
+        $this->actingAs($admin)->putJson("/api/admin/trails/{$trail->id}", [
+            'name' => 'Updated trail name',
+        ])->assertOk();
+        $this->assertSame($trail->getRawOriginal('cover_image'), $trail->fresh()->getRawOriginal('cover_image'));
+
+        $gallery = $trail->images()->firstOrFail();
+        $galleryPath = $gallery->getRawOriginal('image_path');
+        $this->actingAs($admin)->delete("/api/admin/trails/{$trail->id}/images/{$gallery->id}")
+            ->assertNoContent();
+        $this->assertDatabaseMissing('trail_images', ['id' => $gallery->id]);
+        Storage::disk('public')->assertMissing($galleryPath);
+    }
+
+    public function test_only_admins_can_upload_trail_images_and_uploads_must_be_images(): void
+    {
+        Storage::fake('public');
+        $explorer = User::factory()->create();
+
+        $this->actingAs($explorer)->post('/api/admin/trails', array_merge($this->trailData(), [
+            'cover_image' => UploadedFile::fake()->image('cover.jpg'),
+        ]))->assertForbidden();
+
+        $admin = User::factory()->create(['role' => 'admin']);
+        $this->actingAs($admin)->post('/api/admin/trails', array_merge($this->trailData(), [
+            'cover_image' => UploadedFile::fake()->create('notes.pdf', 64, 'application/pdf'),
+        ]))->assertUnprocessable()->assertJsonValidationErrors('cover_image');
     }
 
     private function trailData(): array

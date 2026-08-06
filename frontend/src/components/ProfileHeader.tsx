@@ -8,11 +8,18 @@ import type { ProfilePayload } from '../types/api'
 import { ApiError, apiRequest } from '../utils/api'
 import { InitialAvatar } from './Portal'
 
+type HeaderStat = {
+  icon: ReactNode
+  label: string
+  value: string
+}
+
 type ProfileHeaderProps = {
   badge: ReactNode
   isOwner: boolean
   onProfileSaved: (profile: ProfilePayload) => void
   profile: ProfilePayload
+  stats: HeaderStat[]
 }
 
 type ProfileForm = {
@@ -29,7 +36,13 @@ const profileToForm = (profile: ProfilePayload): ProfileForm => ({
   phone: profile.user.profile?.phone || '',
 })
 
-export function ProfileHeader({ badge, isOwner, onProfileSaved, profile }: ProfileHeaderProps) {
+export function ProfileHeader({
+  badge,
+  isOwner,
+  onProfileSaved,
+  profile,
+  stats,
+}: ProfileHeaderProps) {
   const { authToken, syncAuthenticatedUser } = useAuth()
   const { showToast } = useToast()
   const avatarInputRef = useRef<HTMLInputElement | null>(null)
@@ -109,43 +122,56 @@ export function ProfileHeader({ badge, isOwner, onProfileSaved, profile }: Profi
           )}
         </div>
         <div className="facebook-profile-bar">
-          <div className="facebook-avatar-wrap">
-            {avatar ? (
-              <img src={avatar} alt={profile.user.name} />
-            ) : (
-              <InitialAvatar name={profile.user.name} />
-            )}
+          <div className="facebook-identity-row">
+            <div className="facebook-avatar-wrap">
+              {avatar ? (
+                <img src={avatar} alt={profile.user.name} />
+              ) : (
+                <InitialAvatar name={profile.user.name} />
+              )}
+              {isOwner && (
+                <button
+                  aria-label="Edit profile photo"
+                  className="avatar-camera"
+                  disabled={isSaving}
+                  onClick={() => avatarInputRef.current?.click()}
+                  type="button"
+                >
+                  <Camera size={18} />
+                </button>
+              )}
+            </div>
+            <div className="facebook-profile-name">
+              <div>{badge}</div>
+              <h1>{profile.user.name}</h1>
+              <p>{profile.user.email}</p>
+            </div>
+          </div>
+          <div className="profile-banner-stats">
+            {stats.map((stat) => (
+              <article className="profile-banner-stat" key={stat.label}>
+                {stat.icon}
+                <span>{stat.label}</span>
+                <strong>{stat.value}</strong>
+              </article>
+            ))}
+          </div>
+          <div className="facebook-profile-actions">
             {isOwner && (
               <button
-                aria-label="Edit profile photo"
-                className="avatar-camera"
+                className="button cta"
                 disabled={isSaving}
-                onClick={() => avatarInputRef.current?.click()}
+                onClick={() => {
+                  setForm(profileToForm(profile))
+                  setEditing(true)
+                }}
                 type="button"
               >
-                <Camera size={18} />
+                <Edit size={17} />
+                Edit profile
               </button>
             )}
           </div>
-          <div className="facebook-profile-name">
-            <div>{badge}</div>
-            <h1>{profile.user.name}</h1>
-            <p>{profile.user.email}</p>
-          </div>
-          {isOwner && (
-            <button
-              className="button cta"
-              disabled={isSaving}
-              onClick={() => {
-                setForm(profileToForm(profile))
-                setEditing(true)
-              }}
-              type="button"
-            >
-              <Edit size={17} />
-              Edit profile
-            </button>
-          )}
         </div>
       </section>
       {isOwner && (

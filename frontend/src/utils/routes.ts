@@ -5,3 +5,6 @@ export const dashboardPathForRole = (role: UserRole) => {
   if (role === 'organizer') return '/organizer-dashboard'
   return '/explorer-dashboard'
 }
+
+export const safeLocalReturnPath = (value: string | null | undefined) =>
+  value?.startsWith('/') && !value.startsWith('//') ? value : null
