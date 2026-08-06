@@ -207,6 +207,54 @@ class HikingApiTest extends TestCase
         Storage::disk('public')->assertMissing($galleryPath);
     }
 
+    public function test_admin_trail_coordinates_are_required_validated_and_persisted(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+
+        $this->actingAs($admin)->postJson('/api/admin/trails', array_diff_key($this->trailData(), [
+            'latitude' => true,
+            'longitude' => true,
+        ]))->assertUnprocessable()->assertJsonValidationErrors(['latitude', 'longitude']);
+
+        $this->actingAs($admin)->postJson('/api/admin/trails', array_merge($this->trailData(), [
+            'latitude' => 95,
+            'longitude' => 96.109715,
+        ]))->assertUnprocessable()->assertJsonValidationErrors('latitude');
+
+        $created = $this->actingAs($admin)->postJson('/api/admin/trails', $this->trailData())
+            ->assertCreated()
+            ->assertJsonPath('latitude', '22.0019060')
+            ->assertJsonPath('longitude', '96.1097150')
+            ->json();
+
+        $this->actingAs($admin)->putJson("/api/admin/trails/{$created['id']}", [
+            'latitude' => 21.930625,
+        ])->assertUnprocessable()->assertJsonValidationErrors(['latitude', 'longitude']);
+
+        $this->actingAs($admin)->putJson("/api/admin/trails/{$created['id']}", [
+            'latitude' => 21.930625,
+            'longitude' => 96.143089,
+        ])->assertOk()->assertJsonPath('latitude', '21.9306250')->assertJsonPath('longitude', '96.1430890');
+    }
+
+    public function test_legacy_trails_without_coordinates_can_still_be_read_and_updated(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $trail = Trail::forceCreate(array_diff_key($this->trailData(), [
+            'latitude' => true,
+            'longitude' => true,
+        ]));
+
+        $this->getJson("/api/trails/{$trail->id}")
+            ->assertOk()
+            ->assertJsonPath('latitude', null)
+            ->assertJsonPath('longitude', null);
+
+        $this->actingAs($admin)->putJson("/api/admin/trails/{$trail->id}", [
+            'name' => 'Legacy trail renamed',
+        ])->assertOk()->assertJsonPath('name', 'Legacy trail renamed');
+    }
+
     public function test_only_admins_can_upload_trail_images_and_uploads_must_be_images(): void
     {
         Storage::fake('public');
@@ -227,6 +275,8 @@ class HikingApiTest extends TestCase
         return [
             'name' => 'Mandalay Hill Sunrise Trail',
             'location' => 'Mandalay Hill',
+            'latitude' => 22.001906,
+            'longitude' => 96.109715,
             'difficulty' => 'Easy',
             'distance_km' => 4.2,
             'duration' => '2 hours',

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, Navigate, useLocation, useSearchParams } from 'react-router-dom'
 import { Metric, PortalShell } from '../components/Portal'
+import { TrailMap } from '../components/TrailMap'
 import { useAuth } from '../context/useAuth'
 import { useToast } from '../context/useToast'
 import type { ApiPost, ApiTrail, ApiUser, PaginatedResponse } from '../types/api'
@@ -60,7 +61,9 @@ type TrailForm = {
   distance_km: string
   duration: string
   elevation_m: string
+  latitude: string
   location: string
+  longitude: string
   name: string
   required_equipment: string
 }
@@ -92,9 +95,35 @@ const emptyTrailForm: TrailForm = {
   distance_km: '',
   duration: '',
   elevation_m: '0',
+  latitude: '',
   location: '',
+  longitude: '',
   name: '',
   required_equipment: '',
+}
+
+const visibleTrailFields: Array<keyof TrailForm> = [
+  'name',
+  'location',
+  'difficulty',
+  'distance_km',
+  'duration',
+  'elevation_m',
+  'required_equipment',
+  'best_season',
+  'description',
+]
+
+const trailFieldPlaceholders: Partial<Record<keyof TrailForm, string>> = {
+  best_season: 'November to February',
+  description:
+    'A scenic ridge trail near Mandalay Hill with steady climbing, city viewpoints, shaded monastery paths, and a rewarding sunset lookout.',
+  distance_km: '5.8',
+  duration: '3 hours',
+  elevation_m: '310',
+  location: 'Mandalay Hill, Mandalay',
+  name: 'Mandalay Hill Sunset Ridge',
+  required_equipment: 'Water bottle, hiking shoes, sun hat, light jacket, flashlight',
 }
 
 const viewFromPath = (pathname: string): AdminView | null => {
@@ -114,6 +143,7 @@ export default function AdminDashboardPage() {
   const { showToast } = useToast()
   const view = viewFromPath(pathname)
   const requestRef = useRef(0)
+  const trailFormRef = useRef<HTMLFormElement | null>(null)
 
   const [dashboardState, setDashboardState] = useState<{
     data: DashboardData
@@ -226,8 +256,18 @@ export default function AdminDashboardPage() {
   const saveTrail = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     if (!authToken || !trailModal) return
+    if (!coordinateFromForm(trailModal.form)) {
+      showToast({
+        message: 'Please place the trailhead pin on the map before saving this trail.',
+        title: 'Map pin required',
+        variant: 'warning',
+      })
+      return
+    }
     const payload = new FormData()
-    Object.entries(trailModal.form).forEach(([field, value]) => payload.append(field, value))
+    Object.entries(trailModal.form).forEach(([field, value]) => {
+      payload.append(field, value)
+    })
     if (trailModal.coverImage) payload.append('cover_image', trailModal.coverImage.file)
     trailModal.galleryImages.forEach(({ file }) => payload.append('gallery_images[]', file))
 
@@ -292,6 +332,24 @@ export default function AdminDashboardPage() {
     )
   }
 
+  const removeTrail = async (trail: ApiTrail) => {
+    if (
+      !window.confirm(
+        'Delete this trail? This cascades review/report/favorite deletion and clears related event associations.',
+      )
+    ) {
+      return
+    }
+
+    await mutate('Trail deleted.', () =>
+      apiRequest(`/api/admin/trails/${trail.id}`, {
+        method: 'DELETE',
+        token: authToken,
+      }),
+    )
+    setTrailModal((current) => (current?.trail?.id === trail.id ? null : current))
+  }
+
   return (
     <PortalShell active="admin">
       <div className="admin-compact-head">
@@ -330,29 +388,40 @@ export default function AdminDashboardPage() {
 
       {trailModal && (
         <div className="profile-modal-backdrop" role="presentation">
-          <form className="profile-edit-modal trail-modal" onSubmit={saveTrail}>
+          <form className="profile-edit-modal trail-modal" onSubmit={saveTrail} ref={trailFormRef}>
             <div className="profile-edit-head">
               <h2>{trailModal.trail ? 'Edit Trail' : 'Create Trail'}</h2>
-              <button
-                aria-label="Close trail editor"
-                onClick={() => setTrailModal(null)}
-                type="button"
-              >
-                <span className="material-symbols-outlined">close</span>
-              </button>
+              <div className="trail-modal-head-actions">
+                <button
+                  aria-label="Scroll down trail form"
+                  className="trail-modal-down-indicator"
+                  onClick={() => trailFormRef.current?.scrollBy({ behavior: 'smooth', top: 420 })}
+                  type="button"
+                >
+                  <span className="material-symbols-outlined">keyboard_arrow_down</span>
+                </button>
+                <button
+                  aria-label="Close trail editor"
+                  onClick={() => setTrailModal(null)}
+                  type="button"
+                >
+                  <span className="material-symbols-outlined">close</span>
+                </button>
+              </div>
             </div>
-            {Object.keys(emptyTrailForm).map((field) => (
+            {visibleTrailFields.map((field) => (
               <label key={field}>
                 <span>{field.replace('_', ' ')}</span>
                 {field === 'description' || field === 'required_equipment' ? (
                   <textarea
-                    value={trailModal.form[field as keyof TrailForm]}
-                    onChange={(event) =>
-                      updateTrailForm(field as keyof TrailForm, event.target.value)
-                    }
+                    placeholder={trailFieldPlaceholders[field]}
+                    required
+                    value={trailModal.form[field]}
+                    onChange={(event) => updateTrailForm(field, event.target.value)}
                   />
                 ) : field === 'difficulty' ? (
                   <select
+                    required
                     value={trailModal.form.difficulty}
                     onChange={(event) => updateTrailForm('difficulty', event.target.value)}
                   >
@@ -362,14 +431,78 @@ export default function AdminDashboardPage() {
                   </select>
                 ) : (
                   <input
-                    value={trailModal.form[field as keyof TrailForm]}
-                    onChange={(event) =>
-                      updateTrailForm(field as keyof TrailForm, event.target.value)
-                    }
+                    placeholder={trailFieldPlaceholders[field]}
+                    required
+                    value={trailModal.form[field]}
+                    onChange={(event) => updateTrailForm(field, event.target.value)}
                   />
                 )}
               </label>
             ))}
+            <div className="trail-coordinate-editor">
+              <div>
+                <span className="label">Trailhead location</span>
+                <p>
+                  Click the map to place the trailhead pin, then drag the pin to refine the exact
+                  starting point.
+                </p>
+              </div>
+              {!coordinateFromForm(trailModal.form) && (
+                <div className="trail-map-alert" role="alert">
+                  <span className="material-symbols-outlined">warning</span>
+                  <div>
+                    <strong>Trailhead pin required</strong>
+                    <p>
+                      Select a point on the map before saving. Latitude and longitude will be filled
+                      automatically.
+                    </p>
+                  </div>
+                </div>
+              )}
+              <div className="trail-map-actions">
+                <div
+                  className={
+                    coordinateFromForm(trailModal.form)
+                      ? 'trail-pin-indicator selected'
+                      : 'trail-pin-indicator'
+                  }
+                >
+                  <span className="material-symbols-outlined">
+                    {coordinateFromForm(trailModal.form) ? 'location_on' : 'add_location_alt'}
+                  </span>
+                  {coordinateFromForm(trailModal.form) ? 'Map pin selected' : 'Map pin required'}
+                </div>
+                <button
+                  className="trail-map-cancel"
+                  disabled={!trailModal.form.latitude && !trailModal.form.longitude}
+                  onClick={() =>
+                    setTrailModal({
+                      ...trailModal,
+                      form: { ...trailModal.form, latitude: '', longitude: '' },
+                    })
+                  }
+                  type="button"
+                >
+                  <span className="material-symbols-outlined">close</span>
+                  Clear pin
+                </button>
+              </div>
+              <TrailMap
+                coordinates={coordinateFromForm(trailModal.form)}
+                editable
+                label="Editable trailhead map"
+                onChange={(coordinates) =>
+                  setTrailModal({
+                    ...trailModal,
+                    form: {
+                      ...trailModal.form,
+                      latitude: coordinates.latitude.toFixed(7),
+                      longitude: coordinates.longitude.toFixed(7),
+                    },
+                  })
+                }
+              />
+            </div>
             <label>
               <span>Cover image</span>
               <input
@@ -382,6 +515,7 @@ export default function AdminDashboardPage() {
                     coverImage: { file, preview: URL.createObjectURL(file) },
                   })
                 }}
+                required={!trailModal.coverImage && !trailModal.trail?.cover_image}
                 type="file"
               />
               <small>{trailModal.coverImage?.file.name || 'JPEG, PNG, or WebP up to 6 MB.'}</small>
@@ -409,6 +543,9 @@ export default function AdminDashboardPage() {
                   })
                   event.target.value = ''
                 }}
+                required={
+                  !trailModal.trail?.images?.length && trailModal.galleryImages.length === 0
+                }
                 type="file"
               />
               <small>Choose one or more JPEG, PNG, or WebP files (up to 6 MB each).</small>
@@ -449,9 +586,20 @@ export default function AdminDashboardPage() {
                 </figure>
               ))}
             </div>
-            <button className="button cta wide" type="submit">
-              Save Trail
-            </button>
+            <div className="trail-modal-actions">
+              {trailModal.trail && (
+                <button
+                  className="button danger"
+                  onClick={() => void removeTrail(trailModal.trail!)}
+                  type="button"
+                >
+                  Remove Trail
+                </button>
+              )}
+              <button className="button cta" type="submit">
+                {trailModal.trail ? 'Save Changes' : 'Create Trail'}
+              </button>
+            </div>
           </form>
         </div>
       )}
@@ -563,7 +711,18 @@ export default function AdminDashboardPage() {
           </div>
           <AdminTable headers={['Trail', 'Difficulty', 'Distance', 'Season', 'Actions']}>
             {trails.map((row) => (
-              <tr key={row.id}>
+              <tr
+                className="clickable-row"
+                key={row.id}
+                onClick={() => void openTrailEditor(row)}
+                tabIndex={0}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault()
+                    void openTrailEditor(row)
+                  }
+                }}
+              >
                 <td>
                   <strong>{row.name}</strong>
                   <small>{row.location}</small>
@@ -574,21 +733,20 @@ export default function AdminDashboardPage() {
                 <td>{Number(row.distance_km).toFixed(1)} km</td>
                 <td>{row.best_season || 'Any season'}</td>
                 <td className="row-actions">
-                  <button onClick={() => void openTrailEditor(row)} type="button">
+                  <button
+                    onClick={(event) => {
+                      event.stopPropagation()
+                      void openTrailEditor(row)
+                    }}
+                    type="button"
+                  >
                     Edit
                   </button>
                   <button
-                    onClick={() =>
-                      window.confirm(
-                        'Delete this trail? This cascades review/report/favorite deletion and clears related event associations.',
-                      ) &&
-                      void mutate('Trail deleted.', () =>
-                        apiRequest(`/api/admin/trails/${row.id}`, {
-                          method: 'DELETE',
-                          token: authToken,
-                        }),
-                      )
-                    }
+                    onClick={(event) => {
+                      event.stopPropagation()
+                      void removeTrail(row)
+                    }}
                     type="button"
                   >
                     Delete
@@ -996,10 +1154,24 @@ const trailToForm = (trail: ApiTrail): TrailForm => ({
   distance_km: String(trail.distance_km),
   duration: trail.duration,
   elevation_m: String(trail.elevation_m),
+  latitude: trail.latitude == null ? '' : String(trail.latitude),
   location: trail.location,
+  longitude: trail.longitude == null ? '' : String(trail.longitude),
   name: trail.name,
   required_equipment: trail.required_equipment || '',
 })
+
+const coordinateFromForm = (form: TrailForm) => {
+  if (!form.latitude.trim() || !form.longitude.trim()) return null
+
+  const latitude = Number(form.latitude)
+  const longitude = Number(form.longitude)
+
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return null
+  if (latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) return null
+
+  return { latitude, longitude }
+}
 
 const statusOptionsFor = (view: AdminView) => {
   if (view === 'applications') return ['pending', 'approved', 'rejected']

@@ -58,6 +58,8 @@ class DatabaseSeeder extends Seeder
             [
                 'name' => 'Mandalay Hill Sunrise Trail',
                 'location' => 'Mandalay Hill',
+                'latitude' => 22.0019060,
+                'longitude' => 96.1097150,
                 'difficulty' => 'Easy',
                 'distance_km' => 4.20,
                 'duration' => '2 hours',
@@ -70,6 +72,8 @@ class DatabaseSeeder extends Seeder
             [
                 'name' => 'Dee Dote Waterfall Route',
                 'location' => 'Pyin Oo Lwin Road',
+                'latitude' => 21.9634360,
+                'longitude' => 96.3070610,
                 'difficulty' => 'Moderate',
                 'distance_km' => 7.50,
                 'duration' => '4 hours',
@@ -82,6 +86,8 @@ class DatabaseSeeder extends Seeder
             [
                 'name' => 'Yankin Hill Community Loop',
                 'location' => 'Yankin Hill',
+                'latitude' => 21.9306250,
+                'longitude' => 96.1430890,
                 'difficulty' => 'Moderate',
                 'distance_km' => 6.30,
                 'duration' => '3 hours',

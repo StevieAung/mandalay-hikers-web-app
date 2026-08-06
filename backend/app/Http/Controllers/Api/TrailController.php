@@ -7,6 +7,7 @@ use App\Models\Trail;
 use App\Models\TrailImage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 
 class TrailController extends Controller
 {
@@ -135,6 +136,8 @@ class TrailController extends Controller
         $data = $request->validate([
             'name' => [$required, 'string', 'max:255'],
             'location' => [$required, 'string', 'max:255'],
+            'latitude' => [$required, 'numeric', 'between:-90,90'],
+            'longitude' => [$required, 'numeric', 'between:-180,180'],
             'difficulty' => [$required, 'in:Easy,Moderate,Hard'],
             'distance_km' => [$required, 'numeric', 'min:0'],
             'duration' => [$required, 'string', 'max:120'],
@@ -146,6 +149,13 @@ class TrailController extends Controller
             'required_equipment' => ['nullable', 'string'],
             'best_season' => ['nullable', 'string', 'max:120'],
         ]);
+
+        if ($request->has('latitude') xor $request->has('longitude')) {
+            throw ValidationException::withMessages([
+                'latitude' => 'Latitude and longitude must be provided together.',
+                'longitude' => 'Latitude and longitude must be provided together.',
+            ]);
+        }
 
         return $data;
     }

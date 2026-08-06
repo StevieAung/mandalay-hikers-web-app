@@ -984,6 +984,48 @@ textarea {
   position: relative;
 }
 
+.trail-map {
+  border: 1px solid var(--fog);
+  min-height: 260px;
+  width: 100%;
+  z-index: 1;
+}
+
+.trail-map .leaflet-control-attribution {
+  color: var(--stone);
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0;
+}
+
+.trail-map-marker {
+  background: transparent;
+  border: 0;
+}
+
+.trail-map-marker span {
+  background: var(--orange);
+  border: 3px solid white;
+  border-radius: 999px 999px 999px 0;
+  box-shadow: 0 8px 18px rgba(5, 10, 8, 0.28);
+  display: block;
+  height: 28px;
+  transform: rotate(-45deg);
+  width: 28px;
+}
+
+.trail-map-marker span::after {
+  background: var(--forest);
+  border-radius: 999px;
+  content: '';
+  display: block;
+  height: 8px;
+  left: 7px;
+  position: relative;
+  top: 7px;
+  width: 8px;
+}
+
 .map-frame img,
 .meeting-map img {
   border: 1px solid var(--fog);
@@ -999,6 +1041,51 @@ textarea {
   left: 22px;
   padding: 16px;
   position: absolute;
+}
+
+.map-location-card {
+  background: var(--surface);
+  border: 1px solid var(--fog);
+  bottom: 22px;
+  display: grid;
+  gap: 6px;
+  left: 22px;
+  max-width: min(320px, calc(100% - 44px));
+  padding: 14px 16px;
+  position: absolute;
+  z-index: 2;
+}
+
+.map-location-card small,
+.map-location-card a {
+  color: var(--stone);
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.map-location-card a {
+  color: var(--burnt);
+  text-decoration: none;
+}
+
+.map-frame.unmapped {
+  align-items: center;
+  border: 1px solid var(--fog);
+  display: grid;
+  gap: 8px;
+  min-height: 180px;
+  padding: 28px;
+}
+
+.map-frame.unmapped span {
+  background: transparent;
+  bottom: auto;
+  color: var(--stone);
+  left: auto;
+  padding: 0;
+  position: static;
 }
 
 .gallery-grid {
@@ -2057,7 +2144,8 @@ textarea {
 }
 
 .profile-edit-modal input,
-.profile-edit-modal textarea {
+.profile-edit-modal textarea,
+.profile-edit-modal select {
   background: var(--surface-low);
   border: 1px solid var(--fog);
   color: var(--forest);
@@ -2068,6 +2156,172 @@ textarea {
 .trail-modal small {
   color: var(--outline);
   font-size: 0.78rem;
+}
+
+.trail-modal {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  max-width: 1040px;
+  width: min(1040px, calc(100vw - 36px));
+}
+
+.trail-modal .profile-edit-head,
+.trail-modal > label:has(textarea),
+.trail-modal .trail-coordinate-editor,
+.trail-modal .trail-gallery-editor,
+.trail-modal .trail-modal-actions {
+  grid-column: 1 / -1;
+}
+
+.trail-modal .profile-edit-head {
+  background: var(--surface);
+  margin: -28px -28px 0;
+  padding: 28px 28px 18px;
+  position: sticky;
+  top: -28px;
+  z-index: 5;
+}
+
+.trail-modal-actions {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.button.danger {
+  background: #fee4e2;
+  border-color: #fecdca;
+  color: #912018;
+}
+
+.trail-modal .trail-modal-down-indicator {
+  align-items: center;
+  background: var(--forest);
+  border: 1px solid var(--forest);
+  color: white;
+  cursor: pointer;
+  display: inline-flex;
+  height: 38px;
+  justify-content: center;
+  position: static;
+  width: 38px;
+  z-index: 4;
+}
+
+.trail-modal .trail-modal-down-indicator:hover,
+.trail-modal .trail-modal-down-indicator:focus-visible {
+  background: var(--forest);
+  border-color: var(--forest);
+  color: white;
+}
+
+.trail-modal-head-actions {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+}
+
+.trail-modal-down-indicator span {
+  font-size: 24px;
+}
+
+.trail-coordinate-editor {
+  border: 1px solid var(--fog);
+  display: grid;
+  gap: 14px;
+  padding: 14px;
+}
+
+.trail-coordinate-editor p {
+  color: var(--stone);
+  font-size: 0.9rem;
+  margin: 6px 0 0;
+}
+
+.trail-map-alert {
+  align-items: flex-start;
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  color: #9a3412;
+  display: flex;
+  gap: 10px;
+  padding: 12px 14px;
+}
+
+.trail-map-alert > span {
+  font-size: 20px;
+  margin-top: 1px;
+}
+
+.trail-map-alert strong {
+  display: block;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.trail-map-alert p {
+  color: #9a3412;
+  font-size: 0.85rem;
+  margin: 4px 0 0;
+}
+
+.trail-map-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: space-between;
+}
+
+.trail-pin-indicator {
+  align-items: center;
+  background: #fee4e2;
+  border: 1px solid #fecdca;
+  color: #912018;
+  display: inline-flex;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 700;
+  gap: 7px;
+  letter-spacing: 0.1em;
+  min-height: 36px;
+  padding: 0 12px;
+  text-transform: uppercase;
+}
+
+.trail-pin-indicator.selected {
+  background: #e7f5ec;
+  border-color: #b7dfc3;
+  color: var(--forest);
+}
+
+.trail-pin-indicator span {
+  font-size: 18px;
+}
+
+.trail-map-cancel {
+  align-items: center;
+  background: var(--surface);
+  border: 1px solid var(--fog);
+  color: #b42318;
+  cursor: pointer;
+  display: inline-flex;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 700;
+  gap: 6px;
+  justify-self: end;
+  letter-spacing: 0.1em;
+  min-height: 36px;
+  padding: 0 12px;
+  text-transform: uppercase;
+}
+
+.trail-map-cancel:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
 }
 
 .trail-image-preview {
@@ -2601,7 +2855,8 @@ textarea {
 }
 
 .admin-filter-bar input {
-  min-width: min(280px, 100%);
+  min-width: 0;
+  width: min(220px, 100%);
 }
 
 .admin-option-group {
@@ -2672,6 +2927,16 @@ textarea {
 .admin-compact-table td {
   font-size: 14px;
   min-height: 56px;
+}
+
+.admin-compact-table tr.clickable-row {
+  cursor: pointer;
+}
+
+.admin-compact-table tr.clickable-row:focus-visible,
+.admin-compact-table tr.clickable-row:hover {
+  background: var(--surface-low);
+  outline: 1px solid var(--fog);
 }
 
 .admin-compact-table strong,
@@ -3557,6 +3822,11 @@ textarea {
   .rating-line small {
     margin-left: 0;
     width: 100%;
+  }
+
+  .trail-modal,
+  .coordinate-fields {
+    grid-template-columns: 1fr;
   }
 
   .review-modal-actions {

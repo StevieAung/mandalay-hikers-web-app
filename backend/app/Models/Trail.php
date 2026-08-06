@@ -6,13 +6,15 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 
-#[Fillable(['name', 'location', 'difficulty', 'distance_km', 'duration', 'elevation_m', 'cover_image', 'description', 'required_equipment', 'best_season'])]
+#[Fillable(['name', 'location', 'latitude', 'longitude', 'difficulty', 'distance_km', 'duration', 'elevation_m', 'cover_image', 'description', 'required_equipment', 'best_season'])]
 class Trail extends Model
 {
     protected function casts(): array
     {
         return [
             'distance_km' => 'decimal:2',
+            'latitude' => 'decimal:7',
+            'longitude' => 'decimal:7',
         ];
     }
 

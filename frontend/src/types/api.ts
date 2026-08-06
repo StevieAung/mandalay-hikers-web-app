@@ -26,7 +26,9 @@ export type ApiTrail = {
   elevation_m: number
   id: number
   images?: ApiTrailImage[]
+  latitude?: number | string | null
   location: string
+  longitude?: number | string | null
   name: string
   ratings?: ApiRating[]
   ratings_avg_score?: string | number | null

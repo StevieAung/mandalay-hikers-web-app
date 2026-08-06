@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { DividerTitle, Stat } from '../components/Cards'
 import { Footer } from '../components/Footer'
+import { TrailMap } from '../components/TrailMap'
 import { useAuth } from '../context/useAuth'
 import { useLocale } from '../context/useLocale'
 import { useToast } from '../context/useToast'
@@ -261,6 +262,7 @@ export default function TrailDetailPage() {
   const galleryImages = trail.images?.length
     ? trail.images.map((image) => image.image_path)
     : [IMG.detailGallery1, IMG.detailGallery2, IMG.detailGallery3]
+  const coordinates = coordinateFromTrail(trail)
 
   return (
     <main>
@@ -298,10 +300,34 @@ export default function TrailDetailPage() {
             <Stat label={t('detail.equipment')} value={trail.required_equipment || '—'} />
           </div>
           <DividerTitle title={t('detail.coordinates')} />
-          <div className="map-frame">
-            <img src={IMG.detailMap} alt={t('detail.mapAlt')} />
-            <span>{trail.location}</span>
-          </div>
+          {coordinates ? (
+            <div className="map-frame">
+              <TrailMap
+                coordinates={coordinates}
+                label={`${trail.name} trailhead map`}
+                scrollWheelZoom={false}
+              />
+              <div className="map-location-card">
+                <strong>{trail.location}</strong>
+                <small>
+                  {coordinates.latitude.toFixed(7)}, {coordinates.longitude.toFixed(7)}
+                </small>
+                <a
+                  href={`https://www.openstreetmap.org/?mlat=${coordinates.latitude}&mlon=${coordinates.longitude}#map=15/${coordinates.latitude}/${coordinates.longitude}`}
+                  rel="noreferrer"
+                  target="_blank"
+                >
+                  Open in OpenStreetMap
+                </a>
+              </div>
+            </div>
+          ) : (
+            <div className="map-frame unmapped">
+              <span className="material-symbols-outlined">location_off</span>
+              <strong>Location not mapped yet</strong>
+              <small>{trail.location}</small>
+            </div>
+          )}
         </div>
         <aside className="detail-side">
           <DividerTitle title={t('detail.gallery')} />
@@ -453,6 +479,18 @@ export default function TrailDetailPage() {
       )}
     </main>
   )
+}
+
+function coordinateFromTrail(trail: ApiTrail) {
+  if (trail.latitude == null || trail.longitude == null) return null
+
+  const latitude = Number(trail.latitude)
+  const longitude = Number(trail.longitude)
+
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return null
+  if (latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) return null
+
+  return { latitude, longitude }
 }
 
 function RatingStars({ score, label }: { score: number; label: string }) {
