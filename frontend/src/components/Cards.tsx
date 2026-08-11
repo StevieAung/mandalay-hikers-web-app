@@ -1,21 +1,23 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
-import type { CommunityPost, Trail, TrekEvent } from '../types'
-import type { ApiTrail } from '../types/api'
+import type { ApiEvent, ApiPost, ApiTrail } from '../types/api'
 import { IMG } from '../data/mockData'
 import { bgStyle } from '../utils/style'
 import { useLocale } from '../context/useLocale'
-import { formatEventDate } from '../utils/date'
-import { formatDistance } from '../utils/format'
+import { formatDate, formatDistance, formatTime } from '../utils/format'
 
-export function OverlayTrail({ trail }: { trail: Trail }) {
+export function OverlayTrail({ trail }: { trail: ApiTrail }) {
   return (
-    <Link className="overlay-card" to={`/trails/${trail.id}`} style={bgStyle(trail.image)}>
+    <Link
+      className="overlay-card"
+      to={`/trails/${trail.id}`}
+      style={bgStyle(trail.cover_image || IMG.trailA)}
+    >
       <span>
-        {trail.difficulty} - {trail.distance}
+        {trail.difficulty} - {formatDistance(trail.distance_km)}
       </span>
-      <h3>{trail.name.replace('Path', '')}</h3>
-      <p>{trail.summary}</p>
+      <h3>{trail.name}</h3>
+      <p>{trail.description}</p>
     </Link>
   )
 }
@@ -45,20 +47,28 @@ export function TrailListingCard({ trail }: { trail: ApiTrail }) {
   )
 }
 
-export function EventListingCard({ event }: { event: TrekEvent }) {
-  const { locale, t } = useLocale()
+export function EventListingCard({ event }: { event: ApiEvent }) {
+  const { t } = useLocale()
+  const joined = event.participants_count ?? 0
+  const isFull = joined >= event.participant_limit
+  const label = isFull ? 'Full' : `${event.participant_limit - joined} slots left`
+
   return (
     <Link className="event-card" to={`/events/${event.id}`}>
       <div>
-        <img src={event.image} alt={event.title} />
-        <span className={event.status === 'Full' ? 'badge full' : 'badge orange'}>
-          {event.status}
-        </span>
+        {event.cover_image ? (
+          <img src={event.cover_image} alt={event.title} />
+        ) : (
+          <img src={IMG.eventForest} alt={event.title} />
+        )}
+        <span className={isFull ? 'badge full' : 'badge orange'}>{label}</span>
       </div>
-      <p className="mono">{formatEventDate(event.date, event.time, locale)}</p>
+      <p className="mono">
+        {formatDate(event.starts_at)} - {formatTime(event.starts_at)}
+      </p>
       <h3>{event.title}</h3>
-      <p>{event.text}</p>
-      {event.status === 'Full' && (
+      <p>{event.description || event.destination}</p>
+      {isFull && (
         <button className="button outline wide" type="button">
           {t('card.registrationClosed')}
         </button>
@@ -91,23 +101,20 @@ export function Section({
   )
 }
 
-export function PostPreview({ post }: { post: CommunityPost }) {
-  const { t } = useLocale()
+export function PostPreview({ post }: { post: ApiPost }) {
   const authorPath =
-    post.authorId === 'mandalay-treks'
-      ? `/organizers/${post.authorId}`
-      : `/profiles/${post.authorId}`
+    post.user?.role === 'organizer' ? `/organizers/${post.user_id}` : `/profiles/${post.user_id}`
 
   return (
     <article className="post-preview">
-      <img src={post.image} alt={post.title} />
+      <img src={post.image || IMG.lunch} alt={post.title} />
       <div>
-        <Link to={authorPath}>{post.handle}</Link>
+        <Link to={authorPath}>{post.user?.name || 'Community member'}</Link>
         <h3>{post.title}</h3>
-        <p>{post.likes}</p>
-        <button type="button" aria-label={t('card.like')}>
-          ♡
-        </button>
+        <p>{post.comments_count ?? 0} comments</p>
+        <Link to="/community" aria-label="Open the community board">
+          →
+        </Link>
       </div>
     </article>
   )

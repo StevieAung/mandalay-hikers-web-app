@@ -17,6 +17,9 @@ type AuthPageProps = {
   defaultEmail?: string
   redirectTo?: string | null
   intent?: 'public' | 'admin'
+  modal?: boolean
+  onClose?: () => void
+  onSwitchMode?: () => void
 }
 
 export default function AuthPage({
@@ -24,6 +27,9 @@ export default function AuthPage({
   defaultEmail = 'explorer.min@mandalayhikes.test',
   redirectTo = null,
   intent = 'public',
+  modal = false,
+  onClose,
+  onSwitchMode,
 }: AuthPageProps) {
   const isRegister = mode === 'register'
   const isAdminLogin = intent === 'admin'
@@ -89,8 +95,18 @@ export default function AuthPage({
   }
 
   return (
-    <main className="auth-shell">
+    <main className={modal ? 'auth-modal-backdrop' : 'auth-shell'}>
       <section className="auth-form-side">
+        {modal && onClose && (
+          <button
+            aria-label="Close authentication form"
+            className="auth-modal-close"
+            onClick={onClose}
+            type="button"
+          >
+            <span className="material-symbols-outlined">close</span>
+          </button>
+        )}
         <div className="auth-language">
           <LanguageToggle />
         </div>
@@ -142,9 +158,15 @@ export default function AuthPage({
           {!isAdminLogin && (
             <p className="auth-switch">
               {isRegister ? t('auth.already') : t('auth.new')}{' '}
-              <Link to={alternateAuthUrl}>
-                {isRegister ? t('nav.signIn') : t('auth.createAccount')}
-              </Link>
+              {onSwitchMode ? (
+                <button className="auth-switch-button" onClick={onSwitchMode} type="button">
+                  {isRegister ? t('nav.signIn') : t('auth.createAccount')}
+                </button>
+              ) : (
+                <Link to={alternateAuthUrl}>
+                  {isRegister ? t('nav.signIn') : t('auth.createAccount')}
+                </Link>
+              )}
             </p>
           )}
         </form>

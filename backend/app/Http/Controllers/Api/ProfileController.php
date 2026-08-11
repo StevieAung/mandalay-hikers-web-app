@@ -15,7 +15,7 @@ class ProfileController extends Controller
 
     public function dashboard(Request $request)
     {
-        return $this->profilePayload($request->user());
+        return $this->profilePayload($request->user(), true);
     }
 
     public function update(Request $request)
@@ -50,7 +50,7 @@ class ProfileController extends Controller
         return $this->profilePayload($user->fresh());
     }
 
-    private function profilePayload(User $user)
+    private function profilePayload(User $user, bool $includeOwnerOnly = false)
     {
         $user->load('profile')
             ->loadCount(['favorites', 'joinedEvents', 'posts']);
@@ -86,7 +86,7 @@ class ProfileController extends Controller
             ->latest('reviewed_at')
             ->first();
 
-        return [
+        $payload = [
             'user' => $this->presentUser($user),
             'favorites' => $favorites,
             'joined_events' => $joinedEvents,
@@ -94,6 +94,12 @@ class ProfileController extends Controller
             'hosted_events' => $hostedEvents,
             'approved_organizer_application' => $approvedApplication,
         ];
+
+        if ($includeOwnerOnly) {
+            $payload['latest_organizer_application'] = $user->organizerApplications()->latest()->first();
+        }
+
+        return $payload;
     }
 
     private function presentUser(User $user): array

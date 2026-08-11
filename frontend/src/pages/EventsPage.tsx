@@ -1,15 +1,39 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { EventListingCard } from '../components/Cards'
 import { Footer } from '../components/Footer'
 import { useAuth } from '../context/useAuth'
 import { useLocale } from '../context/useLocale'
-import { useLocalizedContent } from '../data/useLocalizedContent'
-import { formatEventDate } from '../utils/date'
+import { IMG } from '../data/mockData'
+import type { ApiEvent, PaginatedResponse } from '../types/api'
+import { ApiError, apiRequest } from '../utils/api'
+import { formatDate, formatTime } from '../utils/format'
 
 export default function EventsPage() {
   const { user } = useAuth()
-  const { locale, t } = useLocale()
-  const { events } = useLocalizedContent()
+  const { t } = useLocale()
+  const [events, setEvents] = useState<ApiEvent[]>([])
+  const [error, setError] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    const loadEvents = async () => {
+      try {
+        const response = await apiRequest<PaginatedResponse<ApiEvent>>('/api/events')
+        setEvents(response.data)
+        setError(null)
+      } catch (requestError) {
+        setError(
+          requestError instanceof ApiError ? requestError.message : 'Could not load hiking events.',
+        )
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    void loadEvents()
+  }, [])
+
   const createPath =
     user?.role === 'organizer'
       ? '/organizer/events/new'
@@ -35,6 +59,9 @@ export default function EventsPage() {
         ? 'Apply to organize'
         : 'Sign in to organize'
 
+  const featured = events.find((event) => event.status === 'featured') ?? events[0] ?? null
+  const rest = featured ? events.filter((event) => event.id !== featured.id) : events
+
   return (
     <main>
       <section className="events-page">
@@ -52,17 +79,28 @@ export default function EventsPage() {
           )}
         </div>
         <div className="events-grid">
-          <Link className="featured-event" to="/events/yankin-dawn">
-            <img src={events[0].image} alt={events[0].title} />
-            <div>
-              <span className="badge dark-badge">{events[0].status}</span>
-              <span className="badge pale">Advanced</span>
-              <p className="mono">{formatEventDate(events[0].date, events[0].time, locale)}</p>
-              <h2>{events[0].title}</h2>
-              <p>{events[0].text}</p>
-            </div>
-          </Link>
-          {events.slice(1).map((event) => (
+          {isLoading && <p className="table-empty">Loading hiking events...</p>}
+          {error && <p className="table-empty danger">{error}</p>}
+          {!isLoading && !error && !events.length && (
+            <p className="table-empty">No events have been scheduled yet.</p>
+          )}
+          {featured && (
+            <Link className="featured-event" to={`/events/${featured.id}`}>
+              <img src={featured.cover_image || IMG.eventHero} alt={featured.title} />
+              <div>
+                <span className="badge dark-badge">{featured.status}</span>
+                <span className="badge pale">
+                  {featured.participants_count ?? 0} / {featured.participant_limit} joined
+                </span>
+                <p className="mono">
+                  {formatDate(featured.starts_at)} - {formatTime(featured.starts_at)}
+                </p>
+                <h2>{featured.title}</h2>
+                <p>{featured.description || featured.destination}</p>
+              </div>
+            </Link>
+          )}
+          {rest.map((event) => (
             <EventListingCard key={event.id} event={event} />
           ))}
           <article className="lead-card">

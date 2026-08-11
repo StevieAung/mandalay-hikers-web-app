@@ -255,7 +255,15 @@ export function UserCard({
   )
 }
 
-export function OrganizerRow({ row }: { row: string[] }) {
+export function OrganizerRow({
+  row,
+  onManage,
+  onCancel,
+}: {
+  row: string[]
+  onManage?: () => void
+  onCancel?: () => void
+}) {
   const [name, date, status, participants, image] = row
   return (
     <div className="organizer-row">
@@ -269,11 +277,16 @@ export function OrganizerRow({ row }: { row: string[] }) {
         <strong>{participants}</strong>
         <i />
       </span>
-      <button type="button">
-        <span className="material-symbols-outlined">
-          {status === 'Completed' ? 'analytics' : 'edit'}
-        </span>
-      </button>
+      <span className="organizer-row-actions">
+        <button aria-label={`Manage participants for ${name}`} type="button" onClick={onManage}>
+          <span className="material-symbols-outlined">group</span>
+        </button>
+        {onCancel && status !== 'cancelled' && (
+          <button aria-label={`Cancel ${name}`} type="button" onClick={onCancel}>
+            <span className="material-symbols-outlined">event_busy</span>
+          </button>
+        )}
+      </span>
     </div>
   )
 }

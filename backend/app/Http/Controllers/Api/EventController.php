@@ -29,9 +29,17 @@ class EventController extends Controller
         return $query->orderBy('starts_at')->paginate(12);
     }
 
-    public function show(Event $event)
+    public function show(Request $request, Event $event)
     {
-        return $event->load(['organizer:id,name', 'trail', 'participants:id,name,email']);
+        $event->load(['organizer:id,name,role', 'trail', 'participants:id,name'])
+            ->loadCount('participants');
+
+        $viewer = $request->user('sanctum');
+
+        return $event->setAttribute(
+            'is_joined',
+            $viewer ? $event->participants()->whereKey($viewer->id)->exists() : false,
+        );
     }
 
     public function store(Request $request)

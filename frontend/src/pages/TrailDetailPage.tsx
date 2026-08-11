@@ -14,6 +14,7 @@ import { bgStyle } from '../utils/style'
 
 const INITIAL_REVIEW_COUNT = 5
 const MAX_REVIEW_LENGTH = 1000
+const CONDITIONS = ['Clear', 'Muddy', 'Overgrown', 'Blocked', 'Closed'] as const
 
 export default function TrailDetailPage() {
   const { id } = useParams()
@@ -35,11 +36,17 @@ export default function TrailDetailPage() {
   const [review, setReview] = useState('')
   const [formError, setFormError] = useState<string | null>(null)
   const [visibleReviewCount, setVisibleReviewCount] = useState(INITIAL_REVIEW_COUNT)
+  const [isFavoriting, setIsFavoriting] = useState(false)
+  const [isReportOpen, setIsReportOpen] = useState(false)
+  const [reportCondition, setReportCondition] = useState<string>(CONDITIONS[0])
+  const [reportNotes, setReportNotes] = useState('')
+  const [reportError, setReportError] = useState<string | null>(null)
+  const [isReporting, setIsReporting] = useState(false)
 
   const fetchTrail = useCallback(() => {
     if (!id) throw new Error('Missing trail id')
-    return apiRequest<ApiTrail>(`/api/trails/${id}`)
-  }, [id])
+    return apiRequest<ApiTrail>(`/api/trails/${id}`, { token: authToken })
+  }, [authToken, id])
 
   const refreshTrail = useCallback(async () => {
     const response = await fetchTrail()
@@ -230,6 +237,87 @@ export default function TrailDetailPage() {
     }
   }
 
+  const toggleFavorite = async () => {
+    if (!trail) return
+
+    if (!user) {
+      navigate(`/login?next=${encodeURIComponent(`/trails/${trail.id}`)}`)
+      return
+    }
+
+    const wasFavorited = Boolean(trail.is_favorited)
+    setIsFavoriting(true)
+
+    try {
+      const response = await apiRequest<{ favorited: boolean }>(
+        `/api/trails/${trail.id}/favorite`,
+        { method: wasFavorited ? 'DELETE' : 'POST', token: authToken },
+      )
+      setTrail({ ...trail, is_favorited: response.favorited })
+      showToast({
+        message: wasFavorited
+          ? 'This trail no longer appears in your saved list.'
+          : 'You can find this trail under Saved Trails on your dashboard.',
+        title: wasFavorited ? 'Trail removed' : 'Trail saved',
+        variant: 'success',
+      })
+    } catch (requestError) {
+      showToast({
+        message:
+          requestError instanceof ApiError
+            ? requestError.message
+            : 'Could not update your saved trails.',
+        title: 'Save not updated',
+        variant: 'error',
+      })
+    } finally {
+      setIsFavoriting(false)
+    }
+  }
+
+  const openReport = () => {
+    if (!trail) return
+
+    if (!user) {
+      navigate(`/login?next=${encodeURIComponent(`/trails/${trail.id}`)}`)
+      return
+    }
+
+    setReportCondition(CONDITIONS[0])
+    setReportNotes('')
+    setReportError(null)
+    setIsReportOpen(true)
+  }
+
+  const submitReport = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    if (!trail) return
+
+    setIsReporting(true)
+    setReportError(null)
+
+    try {
+      await apiRequest(`/api/trails/${trail.id}/reports`, {
+        body: JSON.stringify({ condition: reportCondition, notes: reportNotes.trim() || null }),
+        method: 'POST',
+        token: authToken,
+      })
+      setIsReportOpen(false)
+      showToast({
+        message: 'An admin will review the trail condition you reported.',
+        title: 'Condition reported',
+        variant: 'success',
+      })
+    } catch (requestError) {
+      const message =
+        requestError instanceof ApiError ? requestError.message : 'Could not send this report.'
+      setReportError(message)
+      showToast({ message, title: 'Report not sent', variant: 'error' })
+    } finally {
+      setIsReporting(false)
+    }
+  }
+
   if (isLoading) {
     return (
       <main className="route-loading" role="status">
@@ -278,11 +366,18 @@ export default function TrailDetailPage() {
           <h1>{trail.name}</h1>
         </div>
         <div className="hero-buttons">
-          <button className="button cta" type="button">
-            <span className="material-symbols-outlined">bookmark</span>
-            {t('detail.save')}
+          <button
+            className="button cta"
+            disabled={isFavoriting}
+            type="button"
+            onClick={() => void toggleFavorite()}
+          >
+            <span className="material-symbols-outlined">
+              {trail.is_favorited ? 'bookmark_added' : 'bookmark'}
+            </span>
+            {trail.is_favorited ? t('detail.saved') : t('detail.save')}
           </button>
-          <button className="button dark" type="button">
+          <button className="button dark" type="button" onClick={openReport}>
             <span className="material-symbols-outlined">report</span>
             {t('detail.report')}
           </button>
@@ -471,6 +566,80 @@ export default function TrailDetailPage() {
                 </button>
                 <button className="button cta" disabled={isSubmitting} type="submit">
                   {isSubmitting ? t('review.saving') : t('review.save')}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+      {isReportOpen && (
+        <div
+          className="review-modal-backdrop"
+          role="presentation"
+          onMouseDown={() => !isReporting && setIsReportOpen(false)}
+        >
+          <div
+            aria-labelledby="report-dialog-title"
+            aria-modal="true"
+            className="review-modal"
+            onMouseDown={(event) => event.stopPropagation()}
+            role="dialog"
+          >
+            <div className="review-modal-head">
+              <div>
+                <span>{trail.name}</span>
+                <h2 id="report-dialog-title">{t('detail.report')}</h2>
+              </div>
+              <button
+                aria-label={t('review.close')}
+                onClick={() => setIsReportOpen(false)}
+                type="button"
+              >
+                <span className="material-symbols-outlined">close</span>
+              </button>
+            </div>
+            <form onSubmit={submitReport}>
+              <label className="review-text-field">
+                <span>Current condition</span>
+                <select
+                  onChange={(event) => setReportCondition(event.target.value)}
+                  value={reportCondition}
+                >
+                  {CONDITIONS.map((condition) => (
+                    <option key={condition} value={condition}>
+                      {condition}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="review-text-field">
+                <span>
+                  What did you see? <small>{t('review.optional')}</small>
+                </span>
+                <textarea
+                  maxLength={MAX_REVIEW_LENGTH}
+                  onChange={(event) => setReportNotes(event.target.value)}
+                  placeholder="Fallen trees, washed-out steps, closures, or anything the next hiker should know."
+                  rows={6}
+                  value={reportNotes}
+                />
+              </label>
+              {reportError && (
+                <p className="review-form-error" role="alert">
+                  {reportError}
+                </p>
+              )}
+              <div className="review-modal-actions">
+                <button
+                  className="button outline"
+                  disabled={isReporting}
+                  onClick={() => setIsReportOpen(false)}
+                  type="button"
+                >
+                  {t('review.cancel')}
+                </button>
+                <button className="button cta" disabled={isReporting} type="submit">
+                  {isReporting ? t('review.saving') : 'Send report'}
                 </button>
               </div>
             </form>

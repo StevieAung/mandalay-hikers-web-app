@@ -1,20 +1,78 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Field } from '../components/FormField'
 import { PortalShell } from '../components/Portal'
 import { useAuth } from '../context/useAuth'
+import { useToast } from '../context/useToast'
+import type { ApiOrganizerApplication, ProfilePayload } from '../types/api'
+import { ApiError, apiRequest } from '../utils/api'
+
+const MIN_REASON_LENGTH = 20
 
 export default function OrganizerApplicationPage() {
-  const { user, applications, applyForOrganizer } = useAuth()
+  const { authToken, user } = useAuth()
+  const { showToast } = useToast()
   const [reason, setReason] = useState('')
-  const application = applications.find((item) => item.email === user?.email)
+  const [application, setApplication] = useState<ApiOrganizerApplication | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [formError, setFormError] = useState<string | null>(null)
 
-  const submit = (event: React.FormEvent<HTMLFormElement>) => {
+  useEffect(() => {
+    if (!authToken) return
+
+    const loadApplication = async () => {
+      try {
+        const response = await apiRequest<ProfilePayload>('/api/me/dashboard', { token: authToken })
+        setApplication(response.latest_organizer_application ?? null)
+      } catch {
+        setApplication(null)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    void loadApplication()
+  }, [authToken])
+
+  const submit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    applyForOrganizer(
-      reason || 'I want to organize safe and beginner-friendly Mandalay hiking events.',
-    )
+    const trimmed = reason.trim()
+
+    if (trimmed.length < MIN_REASON_LENGTH) {
+      setFormError(`Please write at least ${MIN_REASON_LENGTH} characters about your experience.`)
+      return
+    }
+
+    setIsSubmitting(true)
+    setFormError(null)
+
+    try {
+      const created = await apiRequest<ApiOrganizerApplication>('/api/organizer-applications', {
+        body: JSON.stringify({ reason: trimmed }),
+        method: 'POST',
+        token: authToken,
+      })
+      setApplication(created)
+      setReason('')
+      showToast({
+        message: 'An admin will review your request and update your role once approved.',
+        title: 'Application submitted',
+        variant: 'success',
+      })
+    } catch (requestError) {
+      const message =
+        requestError instanceof ApiError
+          ? requestError.message
+          : 'Could not submit your application.'
+      setFormError(message)
+      showToast({ message, title: 'Application not sent', variant: 'error' })
+    } finally {
+      setIsSubmitting(false)
+    }
   }
+
+  const pendingOrApproved = application?.status === 'pending' || application?.status === 'approved'
 
   return (
     <PortalShell active={user?.role === 'organizer' ? 'organizer' : 'explorer'}>
@@ -37,17 +95,26 @@ export default function OrganizerApplicationPage() {
             Open Dashboard
           </Link>
         </article>
-      ) : application ? (
+      ) : isLoading ? (
+        <p className="table-empty">Checking your application status...</p>
+      ) : pendingOrApproved ? (
         <article className="dark-callout">
-          <h2>Application {application.status}</h2>
-          <p>{application.reason}</p>
+          <h2>Application {application?.status}</h2>
+          <p>{application?.reason}</p>
+          {application?.review_note && <p>Reviewer note: {application.review_note}</p>}
           <Link className="button cta" to="/explorer-dashboard">
             Back to Explorer Dashboard
           </Link>
         </article>
       ) : (
         <form className="create-form" onSubmit={submit}>
-          <Field label="Applicant" value={user?.name || ''} onChange={() => null} />
+          {application?.status === 'rejected' && (
+            <article className="dark-callout">
+              <h2>Your last application was rejected</h2>
+              <p>{application.review_note || 'You can submit an updated application below.'}</p>
+            </article>
+          )}
+          <Field label="Applicant" readOnly value={user?.name || ''} onChange={() => null} />
           <label className="form-field">
             <span>Why do you want to organize hikes?</span>
             <textarea
@@ -56,8 +123,9 @@ export default function OrganizerApplicationPage() {
               placeholder="Share your hiking experience, safety approach, and the kinds of Mandalay events you want to lead."
             />
           </label>
-          <button className="button cta" type="submit">
-            Submit Application
+          {formError && <p className="table-empty danger">{formError}</p>}
+          <button className="button cta" disabled={isSubmitting} type="submit">
+            {isSubmitting ? 'Submitting...' : 'Submit Application'}
           </button>
         </form>
       )}

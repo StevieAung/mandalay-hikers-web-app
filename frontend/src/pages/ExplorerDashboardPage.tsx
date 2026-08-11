@@ -1,17 +1,21 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import Camera from 'reicon-react/icons/Camera'
+import Route from 'reicon-react/icons/Route'
+import Star from 'reicon-react/icons/Star'
 import { DateCard, PortalSection, PortalShell, SavedTrail, UserCard } from '../components/Portal'
+import { ProfileHeader } from '../components/ProfileHeader'
 import { useAuth } from '../context/useAuth'
 import type { ProfilePayload } from '../types/api'
 import { ApiError, apiRequest } from '../utils/api'
 import { formatDate, formatDistance, formatTime } from '../utils/format'
 
 export default function ExplorerDashboardPage() {
-  const { authToken, user, applications } = useAuth()
+  const { authToken, user } = useAuth()
   const [dashboard, setDashboard] = useState<ProfilePayload | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(Boolean(authToken))
-  const application = applications.find((item) => item.email === user?.email)
+  const application = dashboard?.latest_organizer_application
 
   useEffect(() => {
     if (!authToken) return
@@ -43,6 +47,31 @@ export default function ExplorerDashboardPage() {
 
   return (
     <PortalShell active="explorer">
+      {dashboard && (
+        <ProfileHeader
+          badge={<span className="badge pale">{dashboard.user.role}</span>}
+          isOwner
+          onProfileSaved={setDashboard}
+          profile={dashboard}
+          stats={[
+            {
+              icon: <Route size={22} />,
+              label: 'Completed treks',
+              value: String(dashboard.user.joined_events_count ?? 0),
+            },
+            {
+              icon: <Camera size={22} />,
+              label: 'Trip posts',
+              value: String(dashboard.user.posts_count ?? 0),
+            },
+            {
+              icon: <Star size={22} />,
+              label: 'Saved trails',
+              value: String(dashboard.user.favorites_count ?? 0),
+            },
+          ]}
+        />
+      )}
       <div className="portal-top">
         <div>
           <span className="label orange-text">Current View</span>

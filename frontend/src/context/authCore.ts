@@ -1,5 +1,5 @@
 import { createContext } from 'react'
-import type { OrganizerApplication, User } from '../types'
+import type { User } from '../types'
 
 export type RegisterInput = {
   name: string
@@ -12,18 +12,10 @@ export type AuthContextValue = {
   user: User | null
   authToken: string | null
   isLoading: boolean
-  applications: OrganizerApplication[]
   login: (email: string, password: string) => Promise<User['role']>
   register: (input: RegisterInput) => Promise<User['role']>
   logout: () => Promise<void>
   syncAuthenticatedUser: (user: User) => void
-  applyForOrganizer: (reason: string) => void
-  approveOrganizer: (applicationId: string) => void
 }
 
 export const AuthContext = createContext<AuthContextValue | null>(null)
-
-export const readJson = <T>(key: string, fallback: T): T => {
-  const saved = localStorage.getItem(key)
-  return saved ? (JSON.parse(saved) as T) : fallback
-}

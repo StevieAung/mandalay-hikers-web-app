@@ -123,7 +123,22 @@ class DatabaseSeeder extends Seeder
             'review' => 'Beautiful pools and shaded rest stops. Grip shoes are essential on the rocks.',
         ]);
 
-        Event::create([
+        OrganizerApplication::create([
+            'user_id' => $explorer->id,
+            'reason' => 'I have walked every Mandalay Hill route this year and want to lead beginner sunrise groups safely.',
+            'status' => 'pending',
+        ]);
+
+        $explorer->favorites()->attach([$trails[0]->id, $trails[1]->id]);
+
+        $trails[1]->reports()->create([
+            'user_id' => $explorer->id,
+            'condition' => 'muddy',
+            'notes' => 'The last descent to the pools is slippery after the weekend rain. Grip shoes are essential right now.',
+            'status' => 'open',
+        ]);
+
+        $sunriseWalk = Event::create([
             'organizer_id' => $verifiedOrganizer->id,
             'trail_id' => $trails[0]->id,
             'title' => 'Saturday Sunrise Walk',
@@ -149,11 +164,18 @@ class DatabaseSeeder extends Seeder
             'cover_image' => $trails[1]->getRawOriginal('cover_image'),
         ]);
 
-        Post::create([
+        $sunriseWalk->participants()->attach($explorer->id, ['attendance_status' => 'joined']);
+
+        $post = Post::create([
             'user_id' => $explorer->id,
             'title' => 'First sunrise hike at Mandalay Hill',
             'body' => 'The route was friendly for beginners, but starting before sunrise made the view much better. Bring water even for short climbs.',
             'image' => $trails[0]->getRawOriginal('cover_image'),
+        ]);
+
+        $post->comments()->create([
+            'user_id' => $verifiedOrganizer->id,
+            'body' => 'Glad it went well. The south stairway is the easiest start if you bring first-time hikers along.',
         ]);
     }
 }

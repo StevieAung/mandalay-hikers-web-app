@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
-import type { OrganizerApplication, User } from '../types'
+import type { User } from '../types'
 import { apiRequest } from '../utils/api'
-import { AuthContext, readJson } from './authCore'
+import { AuthContext } from './authCore'
 import type { RegisterInput } from './authCore'
 
 const TOKEN_STORAGE_KEY = 'hikers_auth_token'
@@ -16,14 +16,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [token, setToken] = useState<string | null>(() => localStorage.getItem(TOKEN_STORAGE_KEY))
   const [isLoading, setIsLoading] = useState(Boolean(token))
-  const [applications, setApplications] = useState<OrganizerApplication[]>(() =>
-    readJson<OrganizerApplication[]>('hikers_organizer_applications', []),
-  )
 
   const persistSession = useCallback((nextUser: User | null, nextToken: string | null) => {
     setUser(nextUser)
     setToken(nextToken)
     localStorage.removeItem('hikers_user')
+    localStorage.removeItem('hikers_organizer_applications')
 
     if (nextToken) {
       localStorage.setItem(TOKEN_STORAGE_KEY, nextToken)
@@ -32,11 +30,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     localStorage.removeItem(TOKEN_STORAGE_KEY)
   }, [])
-
-  const persistApplications = (nextApplications: OrganizerApplication[]) => {
-    setApplications(nextApplications)
-    localStorage.setItem('hikers_organizer_applications', JSON.stringify(nextApplications))
-  }
 
   useEffect(() => {
     if (!token) {
@@ -99,71 +92,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(nextUser)
   }, [])
 
-  const applyForOrganizer = useCallback(
-    (reason: string) => {
-      if (!user || user.role !== 'explorer') return
-
-      const alreadyPending = applications.some(
-        (application) => application.email === user.email && application.status === 'pending',
-      )
-      if (alreadyPending) return
-
-      persistApplications([
-        {
-          id: `APP-${Date.now()}`,
-          name: user.name,
-          email: user.email,
-          reason,
-          status: 'pending',
-        },
-        ...applications,
-      ])
-    },
-    [applications, user],
-  )
-
-  const approveOrganizer = useCallback(
-    (applicationId: string) => {
-      const nextApplications = applications.map((application) =>
-        application.id === applicationId
-          ? { ...application, status: 'approved' as const }
-          : application,
-      )
-      const approved = nextApplications.find((application) => application.id === applicationId)
-      persistApplications(nextApplications)
-
-      if (user && approved?.email === user.email) {
-        setUser({ ...user, role: 'organizer' })
-      }
-    },
-    [applications, user],
-  )
-
   const value = useMemo(
     () => ({
       user,
       authToken: token,
       isLoading,
-      applications,
       login,
       register,
       logout,
       syncAuthenticatedUser,
-      applyForOrganizer,
-      approveOrganizer,
     }),
-    [
-      applications,
-      applyForOrganizer,
-      approveOrganizer,
-      isLoading,
-      login,
-      logout,
-      register,
-      syncAuthenticatedUser,
-      token,
-      user,
-    ],
+    [isLoading, login, logout, register, syncAuthenticatedUser, token, user],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

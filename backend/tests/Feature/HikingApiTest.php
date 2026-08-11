@@ -54,9 +54,11 @@ class HikingApiTest extends TestCase
         $first = User::factory()->create();
         $second = User::factory()->create();
 
-        $this->actingAs($first)->postJson("/api/events/{$event->id}/join")->assertOk()->assertJsonPath('participants_count', 1);
-        $this->actingAs($first)->postJson("/api/events/{$event->id}/join")->assertUnprocessable();
-        $this->actingAs($second)->postJson("/api/events/{$event->id}/join")->assertUnprocessable();
+        $this->actingAs($first, 'sanctum')->postJson("/api/events/{$event->id}/join")->assertOk()->assertJsonPath('participants_count', 1);
+        $this->actingAs($first, 'sanctum')->postJson("/api/events/{$event->id}/join")->assertUnprocessable();
+        $this->actingAs($second, 'sanctum')->postJson("/api/events/{$event->id}/join")->assertUnprocessable();
+
+        $this->assertSame([$first->id], $event->participants()->pluck('users.id')->all());
     }
 
     public function test_admin_approval_turns_explorer_into_organizer(): void
@@ -268,6 +270,57 @@ class HikingApiTest extends TestCase
         $this->actingAs($admin)->post('/api/admin/trails', array_merge($this->trailData(), [
             'cover_image' => UploadedFile::fake()->create('notes.pdf', 64, 'application/pdf'),
         ]))->assertUnprocessable()->assertJsonValidationErrors('cover_image');
+    }
+
+    public function test_trail_detail_reports_favorite_state_for_the_caller(): void
+    {
+        $trail = Trail::create($this->trailData());
+        $user = User::factory()->create();
+
+        $this->getJson("/api/trails/{$trail->id}")->assertOk()->assertJsonPath('is_favorited', false);
+        $this->actingAs($user, 'sanctum')->getJson("/api/trails/{$trail->id}")->assertOk()->assertJsonPath('is_favorited', false);
+
+        $user->favorites()->attach($trail->id);
+
+        $this->actingAs($user, 'sanctum')->getJson("/api/trails/{$trail->id}")->assertOk()->assertJsonPath('is_favorited', true);
+    }
+
+    public function test_event_detail_reports_join_state_and_hides_participant_emails(): void
+    {
+        $trail = Trail::create($this->trailData());
+        $organizer = User::factory()->create(['role' => 'organizer']);
+        $event = Event::create(array_merge($this->eventData($trail), ['organizer_id' => $organizer->id]));
+        $joiner = User::factory()->create();
+        $event->participants()->attach($joiner->id, ['attendance_status' => 'joined']);
+
+        $this->getJson("/api/events/{$event->id}")
+            ->assertOk()
+            ->assertJsonPath('is_joined', false)
+            ->assertJsonPath('participants_count', 1)
+            ->assertJsonMissing(['email' => $joiner->email]);
+
+        $this->actingAs($joiner, 'sanctum')->getJson("/api/events/{$event->id}")->assertOk()->assertJsonPath('is_joined', true);
+
+        $this->actingAs($organizer, 'sanctum')->getJson("/api/events/{$event->id}/participants")
+            ->assertOk()
+            ->assertJsonPath('0.email', $joiner->email);
+    }
+
+    public function test_dashboard_exposes_pending_application_but_public_profile_does_not(): void
+    {
+        $explorer = User::factory()->create();
+        OrganizerApplication::create([
+            'user_id' => $explorer->id,
+            'reason' => 'I want to lead beginner-friendly sunrise hikes around Mandalay Hill.',
+        ]);
+
+        $this->actingAs($explorer)->getJson('/api/me/dashboard')
+            ->assertOk()
+            ->assertJsonPath('latest_organizer_application.status', 'pending');
+
+        $this->getJson("/api/profiles/{$explorer->id}")
+            ->assertOk()
+            ->assertJsonMissingPath('latest_organizer_application');
     }
 
     private function trailData(): array

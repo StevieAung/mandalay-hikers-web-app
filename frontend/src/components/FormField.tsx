@@ -1,5 +1,3 @@
-import { useState } from 'react'
-
 type FieldProps = {
   label: string
   value: string
@@ -7,11 +5,22 @@ type FieldProps = {
   type?: string
   aside?: string
   placeholder?: string
+  min?: number
+  readOnly?: boolean
+  required?: boolean
 }
 
-export function Field({ label, value, onChange, type = 'text', aside, placeholder }: FieldProps) {
-  const [local, setLocal] = useState(value)
-
+export function Field({
+  label,
+  value,
+  onChange,
+  type = 'text',
+  aside,
+  placeholder,
+  min,
+  readOnly = false,
+  required = false,
+}: FieldProps) {
   return (
     <label className="form-field">
       <span>
@@ -20,12 +29,12 @@ export function Field({ label, value, onChange, type = 'text', aside, placeholde
       </span>
       <input
         type={type}
-        value={local}
+        value={value}
         placeholder={placeholder}
-        onChange={(event) => {
-          setLocal(event.target.value)
-          onChange(event.target.value)
-        }}
+        min={min}
+        readOnly={readOnly}
+        required={required}
+        onChange={(event) => onChange(event.target.value)}
       />
     </label>
   )

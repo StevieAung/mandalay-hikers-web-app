@@ -49,14 +49,25 @@ The frontend runs at `http://localhost:5173`.
 
 ## Implemented MVP
 
-- Register, login, logout, profile update
+Every screen reads and writes real MySQL data through the API — there is no mock
+data layer left in the frontend.
+
+- Register, login, logout, profile update with avatar and cover uploads
 - Role-based navigation and protected routes
-- Trail browse, search, filter, details, favorite, rating, condition report
-- Event listing, join/leave, organizer event creation, participant management API
-- Community posts and comments
-- Organizer application submission and admin approval
-- Admin dashboard, users, organizer applications, events, reports, posts APIs
-- Seeded Mandalay-region demo trails, events, posts, and users
+- Home and discovery pages driven by live trails, events, and posts, with
+  server-side trail search and difficulty filtering
+- Trail details with gallery, map, ratings, favorite toggle, and condition reports
+- Event listing, detail, join and leave, organizer event creation, participant
+  roster, and attendance marking
+- Community posts, comments, and delete-your-own moderation
+- Organizer application submitted to the API and approved from the admin queue,
+  which promotes the account to organizer
+- Admin dashboard, users, organizer applications, trails, events, reports, posts
+- Seeded Mandalay-region demo data covering every one of those screens
+
+Content typed by admins and organizers is stored as entered. The Myanmar language
+toggle translates the interface chrome; trail and event names render in whatever
+language they were saved in.
 
 ## Verification
 

@@ -19,7 +19,7 @@ export function PublicLayout() {
 }
 
 export function Header() {
-  const { user, applications, logout } = useAuth()
+  const { user, logout } = useAuth()
   const { t } = useLocale()
   const { pathname } = useLocation()
   const [open, setOpen] = useState(false)
@@ -30,9 +30,7 @@ export function Header() {
       : user?.id && user.role === 'explorer'
         ? `/profiles/${user.id}`
         : null
-  const organizerApplication = applications.find((application) => application.email === user?.email)
-  const isVerifiedOrganizer =
-    user?.role === 'organizer' || organizerApplication?.status === 'approved'
+  const isVerifiedOrganizer = user?.role === 'organizer'
   const isCurrentPath = (path: string) => pathname === path
 
   return (
@@ -82,11 +80,7 @@ export function Header() {
                   to="/organizer/apply"
                 >
                   {isVerifiedOrganizer && <ShieldCheck size={18} weight="Filled" />}
-                  {isVerifiedOrganizer
-                    ? 'Organizer Verified'
-                    : organizerApplication?.status === 'pending'
-                      ? 'Application Pending'
-                      : 'Organizer Application'}
+                  {isVerifiedOrganizer ? 'Organizer Verified' : 'Organizer Application'}
                 </MenuLink>
               )}
               <button type="button" onClick={logout}>

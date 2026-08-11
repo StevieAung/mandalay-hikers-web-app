@@ -28,9 +28,9 @@ class TrailController extends Controller
         return $query->latest()->paginate(12);
     }
 
-    public function show(Trail $trail)
+    public function show(Request $request, Trail $trail)
     {
-        return $trail
+        $trail
             ->loadAvg('ratings', 'score')
             ->loadCount('ratings')
             ->load([
@@ -40,6 +40,13 @@ class TrailController extends Controller
                     ->with('user:id,name,role'),
                 'events.organizer:id,name',
             ]);
+
+        $viewer = $request->user('sanctum');
+
+        return $trail->setAttribute(
+            'is_favorited',
+            $viewer ? $viewer->favorites()->whereKey($trail->id)->exists() : false,
+        );
     }
 
     public function store(Request $request)
