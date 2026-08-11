@@ -1,20 +1,24 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import Camera from 'reicon-react/icons/Camera'
-import Route from 'reicon-react/icons/Route'
-import Star from 'reicon-react/icons/Star'
-import { DateCard, PortalSection, PortalShell, SavedTrail, UserCard } from '../components/Portal'
-import { ProfileHeader } from '../components/ProfileHeader'
+import { DateCard, PortalSection, PortalShell, SavedTrail } from '../components/Portal'
+import { TrekCalendar } from '../components/TrekCalendar'
 import { useAuth } from '../context/useAuth'
 import type { ProfilePayload } from '../types/api'
 import { ApiError, apiRequest } from '../utils/api'
-import { formatDate, formatDistance, formatTime } from '../utils/format'
+import {
+  formatDate,
+  formatDistance,
+  formatRelativeTime,
+  formatTime,
+  toDayKey,
+} from '../utils/format'
 
 export default function ExplorerDashboardPage() {
   const { authToken, user } = useAuth()
   const [dashboard, setDashboard] = useState<ProfilePayload | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(Boolean(authToken))
+  const [selectedDay, setSelectedDay] = useState<string | null>(null)
   const application = dashboard?.latest_organizer_application
 
   useEffect(() => {
@@ -43,41 +47,24 @@ export default function ExplorerDashboardPage() {
 
   const joinedEvents = dashboard?.joined_events ?? []
   const favoriteTrails = dashboard?.favorites ?? []
+  const myPosts = dashboard?.posts ?? []
   const completedCount = dashboard?.user.joined_events_count ?? 0
+  const visibleTreks = selectedDay
+    ? joinedEvents.filter((event) => toDayKey(event.starts_at) === selectedDay)
+    : joinedEvents
 
   return (
     <PortalShell active="explorer">
-      {dashboard && (
-        <ProfileHeader
-          badge={<span className="badge pale">{dashboard.user.role}</span>}
-          isOwner
-          onProfileSaved={setDashboard}
-          profile={dashboard}
-          stats={[
-            {
-              icon: <Route size={22} />,
-              label: 'Completed treks',
-              value: String(dashboard.user.joined_events_count ?? 0),
-            },
-            {
-              icon: <Camera size={22} />,
-              label: 'Trip posts',
-              value: String(dashboard.user.posts_count ?? 0),
-            },
-            {
-              icon: <Star size={22} />,
-              label: 'Saved trails',
-              value: String(dashboard.user.favorites_count ?? 0),
-            },
-          ]}
-        />
-      )}
       <div className="portal-top">
         <div>
           <span className="label orange-text">Current View</span>
           <h1>Explorer Dashboard</h1>
         </div>
-        <UserCard meta={user?.email || 'Explorer account'} name={user?.name} />
+        {user?.id && (
+          <Link className="button outline" to={`/profiles/${user.id}`}>
+            View my profile
+          </Link>
+        )}
       </div>
       <div className="explorer-hero-row">
         <article className="dark-callout">
@@ -100,28 +87,37 @@ export default function ExplorerDashboardPage() {
         </article>
       </div>
       {error && <p className="table-empty danger">{error}</p>}
-      <PortalSection
-        title="Upcoming Treks"
-        meta={`${joinedEvents.length} Scheduled`}
-        action="View Calendar"
-      >
+      <PortalSection title="Upcoming Treks" meta={`${joinedEvents.length} Scheduled`}>
         {isLoading ? (
           <p className="table-empty">Loading joined events...</p>
         ) : joinedEvents.length ? (
-          <div className="trek-row">
-            {joinedEvents.map((event) => (
-              <DateCard
-                date={formatDate(event.starts_at)}
-                key={event.id}
-                place={event.destination}
-                status={event.status}
-                time={formatTime(event.starts_at)}
-                title={event.title}
-              />
-            ))}
+          <div className="trek-calendar-layout">
+            <TrekCalendar
+              events={joinedEvents}
+              onSelectDay={setSelectedDay}
+              selectedDay={selectedDay}
+            />
+            <div className="trek-list">
+              {visibleTreks.length ? (
+                visibleTreks.map((event) => (
+                  <DateCard
+                    date={formatDate(event.starts_at)}
+                    key={event.id}
+                    place={event.destination}
+                    status={event.status}
+                    time={formatTime(event.starts_at)}
+                    title={event.title}
+                  />
+                ))
+              ) : (
+                <p className="table-empty">No treks on the selected day.</p>
+              )}
+            </div>
           </div>
         ) : (
-          <p className="table-empty">You have not joined any upcoming treks yet.</p>
+          <p className="table-empty">
+            You have not joined any upcoming treks yet. <Link to="/events">Browse events</Link>
+          </p>
         )}
       </PortalSection>
       <PortalSection title="Saved Trails" meta={`${favoriteTrails.length} Bookmarked`}>
@@ -140,7 +136,34 @@ export default function ExplorerDashboardPage() {
             ))}
           </div>
         ) : (
-          <p className="table-empty">No saved trails yet.</p>
+          <p className="table-empty">
+            No saved trails yet. <Link to="/trails">Find a trail</Link>
+          </p>
+        )}
+      </PortalSection>
+      <PortalSection title="My Community Posts" meta={`${myPosts.length} Shared`}>
+        {isLoading ? (
+          <p className="table-empty">Loading your posts...</p>
+        ) : myPosts.length ? (
+          <div className="profile-post-grid">
+            {myPosts.map((post) => (
+              <Link className="profile-post-card" key={post.id} to={`/community/${post.id}`}>
+                {post.image ? (
+                  <img src={post.image} alt={post.title} />
+                ) : (
+                  <span className="image-placeholder">No image</span>
+                )}
+                <span>
+                  {formatRelativeTime(post.created_at)} - {post.comments_count ?? 0} comments
+                </span>
+                <h3>{post.title}</h3>
+              </Link>
+            ))}
+          </div>
+        ) : (
+          <p className="table-empty">
+            You have not shared any community posts yet. <Link to="/community">Post an update</Link>
+          </p>
         )}
       </PortalSection>
     </PortalShell>

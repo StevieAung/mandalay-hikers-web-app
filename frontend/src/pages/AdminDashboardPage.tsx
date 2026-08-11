@@ -6,7 +6,7 @@ import { useAuth } from '../context/useAuth'
 import { useToast } from '../context/useToast'
 import type { ApiPost, ApiTrail, ApiUser, PaginatedResponse } from '../types/api'
 import { ApiError, apiRequest } from '../utils/api'
-import { formatDate } from '../utils/format'
+import { formatDate, trailStatusLabel } from '../utils/format'
 
 type AdminView = 'overview' | 'applications' | 'users' | 'trails' | 'events' | 'reports' | 'posts'
 type AdminListView = Exclude<AdminView, 'overview'>
@@ -66,6 +66,7 @@ type TrailForm = {
   longitude: string
   name: string
   required_equipment: string
+  status: string
 }
 
 type PendingImage = { file: File; preview: string }
@@ -100,12 +101,14 @@ const emptyTrailForm: TrailForm = {
   longitude: '',
   name: '',
   required_equipment: '',
+  status: 'open',
 }
 
 const visibleTrailFields: Array<keyof TrailForm> = [
   'name',
   'location',
   'difficulty',
+  'status',
   'distance_km',
   'duration',
   'elevation_m',
@@ -429,6 +432,16 @@ export default function AdminDashboardPage() {
                     <option>Moderate</option>
                     <option>Hard</option>
                   </select>
+                ) : field === 'status' ? (
+                  <select
+                    required
+                    value={trailModal.form.status}
+                    onChange={(event) => updateTrailForm('status', event.target.value)}
+                  >
+                    <option value="open">Open</option>
+                    <option value="closed">Closed</option>
+                    <option value="maintenance">Under Maintenance</option>
+                  </select>
                 ) : (
                   <input
                     placeholder={trailFieldPlaceholders[field]}
@@ -709,7 +722,7 @@ export default function AdminDashboardPage() {
               Create Trail
             </button>
           </div>
-          <AdminTable headers={['Trail', 'Difficulty', 'Distance', 'Season', 'Actions']}>
+          <AdminTable headers={['Trail', 'Difficulty', 'Status', 'Distance', 'Season', 'Actions']}>
             {trails.map((row) => (
               <tr
                 className="clickable-row"
@@ -729,6 +742,9 @@ export default function AdminDashboardPage() {
                 </td>
                 <td>
                   <b className="status pending">{row.difficulty}</b>
+                </td>
+                <td>
+                  <b className={`status ${row.status || 'open'}`}>{trailStatusLabel(row.status)}</b>
                 </td>
                 <td>{Number(row.distance_km).toFixed(1)} km</td>
                 <td>{row.best_season || 'Any season'}</td>
@@ -1159,6 +1175,7 @@ const trailToForm = (trail: ApiTrail): TrailForm => ({
   longitude: trail.longitude == null ? '' : String(trail.longitude),
   name: trail.name,
   required_equipment: trail.required_equipment || '',
+  status: trail.status || 'open',
 })
 
 const coordinateFromForm = (form: TrailForm) => {

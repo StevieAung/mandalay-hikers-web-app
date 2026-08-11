@@ -1,10 +1,13 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
+import Comment from 'reicon-react/icons/Comment'
+import ThumbsUp from 'reicon-react/icons/ThumbsUp'
 import type { ApiEvent, ApiPost, ApiTrail } from '../types/api'
+import { VerifiedBadge } from './community/VerifiedBadge'
 import { IMG } from '../data/mockData'
 import { bgStyle } from '../utils/style'
 import { useLocale } from '../context/useLocale'
-import { formatDate, formatDistance, formatTime } from '../utils/format'
+import { formatDate, formatDistance, formatTime, trailStatusLabel } from '../utils/format'
 
 export function OverlayTrail({ trail }: { trail: ApiTrail }) {
   return (
@@ -29,6 +32,7 @@ export function TrailListingCard({ trail }: { trail: ApiTrail }) {
       <div className="image-wrap">
         <img src={trail.cover_image || IMG.trailA} alt={trail.name} />
         <span className={`badge ${trail.difficulty.toLowerCase()}`}>{trail.difficulty}</span>
+        <span className={`status ${trail.status || 'open'}`}>{trailStatusLabel(trail.status)}</span>
       </div>
       <div>
         <h2>{trail.name}</h2>
@@ -107,12 +111,28 @@ export function PostPreview({ post }: { post: ApiPost }) {
 
   return (
     <article className="post-preview">
-      <img src={post.image || IMG.lunch} alt={post.title} />
+      {post.image ? (
+        <img src={post.image} alt={post.title} />
+      ) : (
+        <span className="image-placeholder">No image</span>
+      )}
       <div>
-        <Link to={authorPath}>{post.user?.name || 'Community member'}</Link>
-        <h3>{post.title}</h3>
-        <p>{post.comments_count ?? 0} comments</p>
-        <Link to="/community" aria-label="Open the community board">
+        <Link className="post-preview-author" to={authorPath}>
+          {post.user?.name || 'Community member'}
+          {post.user?.is_verified && <VerifiedBadge size={14} />}
+        </Link>
+        <h3>
+          <Link to={`/community/${post.id}`}>{post.title}</Link>
+        </h3>
+        <p className="post-preview-counts">
+          <span>
+            <ThumbsUp size={13} weight="Filled" /> {post.likes_count ?? 0}
+          </span>
+          <span>
+            <Comment size={13} /> {post.comments_count ?? 0}
+          </span>
+        </p>
+        <Link to={`/community/${post.id}`} aria-label={`Open the post ${post.title}`}>
           →
         </Link>
       </div>
@@ -120,9 +140,9 @@ export function PostPreview({ post }: { post: ApiPost }) {
   )
 }
 
-export function Stat({ label, value }: { label: string; value: string }) {
+export function Stat({ label, value, wide = false }: { label: string; value: string; wide?: boolean }) {
   return (
-    <div className="stat">
+    <div className={wide ? 'stat wide' : 'stat'}>
       <span>{label}</span>
       <strong>{value}</strong>
     </div>
@@ -150,10 +170,10 @@ export function Review({ name, date, text }: { name: string; date: string; text:
   )
 }
 
-export function Panel({ title, items }: { title: string; items: string[] }) {
+export function Panel({ title, items }: { title?: string; items: string[] }) {
   return (
     <article className="requirement-panel">
-      <h3>{title}</h3>
+      {title && <h3>{title}</h3>}
       {items.map((item) => (
         <p key={item}>
           <span className="material-symbols-outlined">check_circle</span>

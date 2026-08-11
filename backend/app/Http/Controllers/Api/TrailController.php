@@ -15,7 +15,7 @@ class TrailController extends Controller
     {
         $query = Trail::query()
             ->withAvg('ratings', 'score')
-            ->withCount(['events', 'ratings']);
+            ->withCount(['events', 'favorites', 'ratings']);
 
         if ($search = $request->query('search')) {
             $query->where(fn ($q) => $q->where('name', 'like', "%{$search}%")->orWhere('location', 'like', "%{$search}%"));
@@ -25,7 +25,18 @@ class TrailController extends Controller
             $query->where('difficulty', $difficulty);
         }
 
-        return $query->latest()->paginate(12);
+        // "Popular" cascades through the strongest signals that a trail is actually
+        // walked: saves first, then reviews written, then organised hikes.
+        if ($request->query('sort') === 'popular') {
+            $query->orderByDesc('favorites_count')
+                ->orderByDesc('ratings_count')
+                ->orderByDesc('events_count');
+        } else {
+            // Seeded trails share a created_at, so tie-break on id to keep "newest" stable.
+            $query->latest()->orderByDesc('id');
+        }
+
+        return $query->paginate(12);
     }
 
     public function show(Request $request, Trail $trail)
@@ -146,6 +157,7 @@ class TrailController extends Controller
             'latitude' => [$required, 'numeric', 'between:-90,90'],
             'longitude' => [$required, 'numeric', 'between:-180,180'],
             'difficulty' => [$required, 'in:Easy,Moderate,Hard'],
+            'status' => ['sometimes', 'in:open,closed,maintenance'],
             'distance_km' => [$required, 'numeric', 'min:0'],
             'duration' => [$required, 'string', 'max:120'],
             'elevation_m' => ['sometimes', 'integer', 'min:0'],

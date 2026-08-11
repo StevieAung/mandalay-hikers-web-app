@@ -8,10 +8,11 @@ import type { UserRole } from '../types'
 import { Footer } from './Footer'
 import { Header } from './PublicLayout'
 
-export function Sidebar({ active, onNavigate }: { active: UserRole; onNavigate?: () => void }) {
+type SidebarRole = Exclude<UserRole, 'explorer'>
+
+export function Sidebar({ active, onNavigate }: { active: SidebarRole; onNavigate?: () => void }) {
   const { user } = useAuth()
   const navByRole = {
-    explorer: [['explorer', '/explorer-dashboard', 'explore', 'Explorer']],
     organizer: [['organizer', '/organizer-dashboard', 'event_note', 'Organizer']],
     admin: [
       ['overview', '/admin', 'dashboard', 'Overview'],
@@ -109,8 +110,8 @@ export function PortalShell({ active, children }: { active: UserRole; children: 
           Admin Menu
         </button>
       )}
-      <main className="portal-shell">
-        <Sidebar active={active} />
+      <main className={active === 'explorer' ? 'portal-shell no-sidebar' : 'portal-shell'}>
+        {active !== 'explorer' && <Sidebar active={active} />}
         <section className="portal-content">{children}</section>
       </main>
       {active === 'admin' && drawerOpen && (

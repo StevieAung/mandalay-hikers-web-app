@@ -47,16 +47,22 @@ export function TrailMap({
   const mapRef = useRef<L.Map | null>(null)
   const markerRef = useRef<L.Marker | null>(null)
   const onChangeRef = useRef(onChange)
+  const coordinatesRef = useRef(coordinates)
 
   useEffect(() => {
     onChangeRef.current = onChange
   }, [onChange])
 
   useEffect(() => {
+    coordinatesRef.current = coordinates
+  }, [coordinates])
+
+  useEffect(() => {
     if (!containerRef.current || mapRef.current) return
 
     const initial = coordinates || defaultCenter
     const map = L.map(containerRef.current, {
+      attributionControl: false,
       scrollWheelZoom,
       zoomControl: true,
     }).setView([initial.latitude, initial.longitude], zoom)
@@ -65,6 +71,9 @@ export function TrailMap({
       attribution: '&copy; OpenStreetMap contributors',
       maxZoom: 19,
     }).addTo(map)
+
+    L.control.attribution({ position: 'bottomright', prefix: false }).addTo(map)
+    L.control.scale({ imperial: false, maxWidth: 140, position: 'bottomleft' }).addTo(map)
 
     if (editable) {
       map.on('click', (event: L.LeafletMouseEvent) => {
@@ -107,6 +116,13 @@ export function TrailMap({
         title: label,
       }).addTo(map)
 
+      markerRef.current.bindTooltip(label, {
+        className: 'trail-map-tooltip',
+        direction: 'top',
+        offset: [0, -30],
+        permanent: !editable,
+      })
+
       if (editable) {
         markerRef.current.on('dragend', () => {
           const next = markerRef.current?.getLatLng()
@@ -124,13 +140,32 @@ export function TrailMap({
     map.setView(position, map.getZoom() || zoom)
   }, [coordinates, defaultCenter.latitude, defaultCenter.longitude, editable, label, zoom])
 
+  const recentre = () => {
+    const map = mapRef.current
+    const target = coordinatesRef.current || defaultCenter
+    // Snap rather than animate: a long pan tween can be interrupted mid-flight and
+    // leave the map stranded between the two positions.
+    map?.setView([target.latitude, target.longitude], zoom, { animate: false })
+  }
+
   return (
-    <div
-      aria-label={label}
-      className={editable ? 'trail-map editable' : 'trail-map'}
-      ref={containerRef}
-      role="application"
-      style={{ height }}
-    />
+    <div className="trail-map-shell" style={{ height }}>
+      <div
+        aria-label={label}
+        className={editable ? 'trail-map editable' : 'trail-map'}
+        ref={containerRef}
+        role="application"
+        style={{ height }}
+      />
+      <button
+        aria-label="Recentre on the trailhead"
+        className="trail-map-recenter"
+        onClick={recentre}
+        title="Recentre on the trailhead"
+        type="button"
+      >
+        <span className="material-symbols-outlined">my_location</span>
+      </button>
+    </div>
   )
 }

@@ -55,6 +55,7 @@ class AdminController extends Controller
         $data = $request->validate([
             'role' => ['sometimes', 'in:explorer,organizer,admin'],
             'is_banned' => ['sometimes', 'boolean'],
+            'is_verified' => ['sometimes', 'boolean'],
         ]);
 
         $currentAdmin = $request->user();

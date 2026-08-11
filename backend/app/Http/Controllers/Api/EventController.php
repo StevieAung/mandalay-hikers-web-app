@@ -31,7 +31,7 @@ class EventController extends Controller
 
     public function show(Request $request, Event $event)
     {
-        $event->load(['organizer:id,name,role', 'trail', 'participants:id,name'])
+        $event->load(['organizer:id,name,role,is_verified', 'trail', 'participants:id,name'])
             ->loadCount('participants');
 
         $viewer = $request->user('sanctum');

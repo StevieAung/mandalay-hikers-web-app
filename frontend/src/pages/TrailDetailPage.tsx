@@ -9,7 +9,7 @@ import { useToast } from '../context/useToast'
 import { IMG } from '../data/mockData'
 import type { ApiRating, ApiTrail } from '../types/api'
 import { ApiError, apiRequest } from '../utils/api'
-import { formatDistance } from '../utils/format'
+import { formatDistance, trailStatusLabel } from '../utils/format'
 import { bgStyle } from '../utils/style'
 
 const INITIAL_REVIEW_COUNT = 5
@@ -362,6 +362,7 @@ export default function TrailDetailPage() {
           <span className={`badge ${trail.difficulty.toLowerCase()}`}>
             {t('detail.difficulty')}: {trail.difficulty}
           </span>
+          <span className={`status ${trail.status || 'open'}`}>{trailStatusLabel(trail.status)}</span>
           <p className="hero-light">{trail.location}</p>
           <h1>{trail.name}</h1>
         </div>
@@ -392,44 +393,7 @@ export default function TrailDetailPage() {
             <Stat label={t('detail.duration')} value={trail.duration} />
             <Stat label={t('detail.difficulty')} value={trail.difficulty} />
             <Stat label={t('detail.bestSeason')} value={trail.best_season || '—'} />
-            <Stat label={t('detail.equipment')} value={trail.required_equipment || '—'} />
-          </div>
-          <DividerTitle title={t('detail.coordinates')} />
-          {coordinates ? (
-            <div className="map-frame">
-              <TrailMap
-                coordinates={coordinates}
-                label={`${trail.name} trailhead map`}
-                scrollWheelZoom={false}
-              />
-              <div className="map-location-card">
-                <strong>{trail.location}</strong>
-                <small>
-                  {coordinates.latitude.toFixed(7)}, {coordinates.longitude.toFixed(7)}
-                </small>
-                <a
-                  href={`https://www.openstreetmap.org/?mlat=${coordinates.latitude}&mlon=${coordinates.longitude}#map=15/${coordinates.latitude}/${coordinates.longitude}`}
-                  rel="noreferrer"
-                  target="_blank"
-                >
-                  Open in OpenStreetMap
-                </a>
-              </div>
-            </div>
-          ) : (
-            <div className="map-frame unmapped">
-              <span className="material-symbols-outlined">location_off</span>
-              <strong>Location not mapped yet</strong>
-              <small>{trail.location}</small>
-            </div>
-          )}
-        </div>
-        <aside className="detail-side">
-          <DividerTitle title={t('detail.gallery')} />
-          <div className="gallery-grid">
-            {galleryImages.map((image, index) => (
-              <img src={image} alt={t('detail.galleryAlt')} key={`${image}-${index}`} />
-            ))}
+            <Stat label={t('detail.equipment')} value={trail.required_equipment || '—'} wide />
           </div>
           <div className="rating-panel">
             <p className="label">{t('detail.rating')}</p>
@@ -475,7 +439,61 @@ export default function TrailDetailPage() {
               {currentReview ? t('review.edit') : t('detail.writeReview')}
             </button>
           </div>
+        </div>
+        <aside className="detail-side">
+          <DividerTitle title={t('detail.gallery')} />
+          <div className="gallery-grid">
+            {galleryImages.map((image, index) => (
+              <img src={image} alt={t('detail.galleryAlt')} key={`${image}-${index}`} />
+            ))}
+          </div>
         </aside>
+      </section>
+      <section className="detail-map-band">
+        <DividerTitle title={t('detail.location')} />
+        {coordinates ? (
+          <div className="map-frame">
+            <TrailMap
+              coordinates={coordinates}
+              height={460}
+              label={trail.name}
+              scrollWheelZoom={false}
+            />
+            <div className="map-meta">
+              <div>
+                <span>{t('detail.trailhead')}</span>
+                <strong>{trail.location}</strong>
+              </div>
+              <div>
+                <span>{t('detail.coordinates')}</span>
+                <strong className="map-meta-coords">
+                  {coordinates.latitude.toFixed(5)}, {coordinates.longitude.toFixed(5)}
+                </strong>
+              </div>
+              <div>
+                <span>{t('detail.trailStatus')}</span>
+                <b className={`status ${trail.status || 'open'}`}>
+                  {trailStatusLabel(trail.status)}
+                </b>
+              </div>
+              <a
+                className="map-meta-link"
+                href={`https://www.openstreetmap.org/?mlat=${coordinates.latitude}&mlon=${coordinates.longitude}#map=15/${coordinates.latitude}/${coordinates.longitude}`}
+                rel="noreferrer"
+                target="_blank"
+              >
+                <span className="material-symbols-outlined">open_in_new</span>
+                {t('detail.openInOsm')}
+              </a>
+            </div>
+          </div>
+        ) : (
+          <div className="map-frame unmapped">
+            <span className="material-symbols-outlined">location_off</span>
+            <strong>{t('detail.notMapped')}</strong>
+            <small>{trail.location}</small>
+          </div>
+        )}
       </section>
       <Footer />
 
