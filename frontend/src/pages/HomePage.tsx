@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import AuthPage from './AuthPage'
 import { Footer } from '../components/Footer'
 import { OverlayTrail, PostPreview, Section } from '../components/Cards'
 import { IMG } from '../data/mockData'
@@ -14,7 +13,6 @@ const PREVIEW_COUNT = 3
 
 export default function HomePage() {
   const navigate = useNavigate()
-  const [authMode, setAuthMode] = useState<'login' | 'register' | null>(null)
   const { t } = useLocale()
   const [trails, setTrails] = useState<ApiTrail[]>([])
   const [events, setEvents] = useState<ApiEvent[]>([])
@@ -81,18 +79,6 @@ export default function HomePage() {
               {t('home.explore')}
             </button>
           </form>
-          <div className="hero-auth-actions">
-            <button
-              className="button outline light-button"
-              onClick={() => setAuthMode('login')}
-              type="button"
-            >
-              Sign in
-            </button>
-            <button className="button cta" onClick={() => setAuthMode('register')} type="button">
-              Create account
-            </button>
-          </div>
         </div>
       </section>
       <Section title={t('home.popular')} action={t('home.seeAll')} actionTo="/trails">
@@ -137,14 +123,6 @@ export default function HomePage() {
         </div>
       </Section>
       <Footer />
-      {authMode && (
-        <AuthPage
-          mode={authMode}
-          modal
-          onClose={() => setAuthMode(null)}
-          onSwitchMode={() => setAuthMode(authMode === 'login' ? 'register' : 'login')}
-        />
-      )}
     </main>
   )
 }

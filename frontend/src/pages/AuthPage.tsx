@@ -43,8 +43,8 @@ export default function AuthPage({
   const [form, setForm] = useState({
     name: '',
     email: defaultEmail,
-    password: 'password',
-    passwordConfirmation: 'password',
+    password: '',
+    passwordConfirmation: '',
   })
   const returnPath = safeLocalReturnPath(redirectTo ?? searchParams.get('next'))
   const alternateAuthPath = isRegister ? '/login' : '/register'
@@ -128,6 +128,7 @@ export default function AuthPage({
           )}
           <Field
             label={t('auth.email')}
+            selectOnFocus={!isRegister}
             value={form.email}
             onChange={(value) => setForm({ ...form, email: value })}
           />
@@ -137,6 +138,7 @@ export default function AuthPage({
             value={form.password}
             onChange={(value) => setForm({ ...form, password: value })}
             aside={t('auth.forgot')}
+            placeholder="password"
           />
           {isRegister && (
             <Field

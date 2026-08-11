@@ -38,12 +38,14 @@ class ProfileController extends Controller
                 'location' => $data['location'] ?? null,
                 'phone' => $data['phone'] ?? null,
                 'bio' => $data['bio'] ?? null,
+                // Raw originals: the model accessors return absolute URLs, and only relative
+                // paths belong in the column.
                 'avatar' => $request->hasFile('avatar')
                     ? $this->storeImage($request, 'avatar', 'profiles')
-                    : $profile?->avatar,
+                    : $profile?->getRawOriginal('avatar'),
                 'cover_image' => $request->hasFile('cover_image')
                     ? $this->storeImage($request, 'cover_image', 'profile-covers')
-                    : $profile?->cover_image,
+                    : $profile?->getRawOriginal('cover_image'),
             ],
         );
 
@@ -111,6 +113,7 @@ class ProfileController extends Controller
             'name' => $user->name,
             'email' => $user->email,
             'role' => $user->role,
+            'is_verified' => (bool) $user->is_verified,
             'favorites_count' => $user->favorites_count ?? 0,
             'joined_events_count' => $user->joined_events_count ?? 0,
             'posts_count' => $user->posts_count ?? 0,
@@ -118,8 +121,9 @@ class ProfileController extends Controller
                 'id' => $profile->id,
                 'location' => $profile->location,
                 'phone' => $profile->phone,
-                'avatar' => $this->imageUrl($profile->avatar),
-                'cover_image' => $this->imageUrl($profile->cover_image),
+                // Already absolute URLs via the Profile model accessors.
+                'avatar' => $profile->avatar,
+                'cover_image' => $profile->cover_image,
                 'bio' => $profile->bio,
             ] : null,
         ];
