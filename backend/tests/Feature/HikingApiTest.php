@@ -93,6 +93,86 @@ class HikingApiTest extends TestCase
         $this->assertDatabaseHas(Post::class, ['title' => 'Good morning climb']);
     }
 
+    public function test_users_can_like_and_unlike_a_post_without_duplicating_rows(): void
+    {
+        $author = User::factory()->create();
+        $liker = User::factory()->create();
+        $post = Post::create([
+            'user_id' => $author->id,
+            'title' => 'Ridge loop in the rain',
+            'body' => 'Slower than usual but the light was worth it.',
+        ]);
+
+        $this->postJson("/api/posts/{$post->id}/like")->assertUnauthorized();
+
+        $this->actingAs($liker)->postJson("/api/posts/{$post->id}/like")
+            ->assertOk()
+            ->assertJsonPath('liked', true)
+            ->assertJsonPath('likes_count', 1);
+
+        // Liking twice is a no-op rather than a unique-constraint violation.
+        $this->actingAs($liker)->postJson("/api/posts/{$post->id}/like")
+            ->assertOk()
+            ->assertJsonPath('likes_count', 1);
+
+        $this->assertDatabaseCount('post_likes', 1);
+
+        $this->actingAs($liker)->deleteJson("/api/posts/{$post->id}/like")
+            ->assertOk()
+            ->assertJsonPath('liked', false)
+            ->assertJsonPath('likes_count', 0);
+
+        $this->assertDatabaseCount('post_likes', 0);
+    }
+
+    public function test_post_feed_reports_like_state_for_the_caller(): void
+    {
+        $author = User::factory()->create(['role' => 'organizer', 'is_verified' => true]);
+        $viewer = User::factory()->create();
+        $post = Post::create([
+            'user_id' => $author->id,
+            'title' => 'Sunrise start times',
+            'body' => 'Leave the gate by 5am if you want the light.',
+        ]);
+        $post->likes()->attach($viewer->id);
+
+        $this->getJson('/api/posts')
+            ->assertOk()
+            ->assertJsonPath('data.0.likes_count', 1)
+            ->assertJsonPath('data.0.user.is_verified', true)
+            ->assertJsonMissingPath('data.0.is_liked');
+
+        $this->actingAs($viewer, 'sanctum')->getJson('/api/posts')
+            ->assertOk()
+            ->assertJsonPath('data.0.is_liked', true);
+
+        $stranger = User::factory()->create();
+
+        $this->actingAs($stranger, 'sanctum')->getJson('/api/posts')
+            ->assertOk()
+            ->assertJsonPath('data.0.is_liked', false);
+    }
+
+    public function test_single_post_permalink_returns_the_post_with_its_comments(): void
+    {
+        $author = User::factory()->create();
+        $post = Post::create([
+            'user_id' => $author->id,
+            'title' => 'Water stops on the north face',
+            'body' => 'Only one reliable stop, near the second pagoda.',
+        ]);
+        $post->comments()->create(['user_id' => $author->id, 'body' => 'Refilled there twice.']);
+
+        $this->getJson("/api/posts/{$post->id}")
+            ->assertOk()
+            ->assertJsonPath('id', $post->id)
+            ->assertJsonPath('comments_count', 1)
+            ->assertJsonPath('likes_count', 0)
+            ->assertJsonPath('comments.0.body', 'Refilled there twice.');
+
+        $this->getJson('/api/posts/999999')->assertNotFound();
+    }
+
     public function test_trail_reviews_require_authentication_and_validate_payloads(): void
     {
         $trail = Trail::create($this->trailData());

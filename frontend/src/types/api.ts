@@ -24,6 +24,8 @@ export type ApiTrail = {
   distance_km: string | number
   duration: string
   elevation_m: number
+  events_count?: number
+  favorites_count?: number
   id: number
   images?: ApiTrailImage[]
   is_favorited?: boolean
@@ -35,6 +37,7 @@ export type ApiTrail = {
   ratings_avg_score?: string | number | null
   ratings_count?: number
   required_equipment?: string | null
+  status?: string
 }
 
 export type ApiTrailImage = {
@@ -59,6 +62,7 @@ export type ApiRating = {
 
 export type ApiEventOrganizer = {
   id: number
+  is_verified?: boolean
   name: string
   role?: UserRole
 }
@@ -102,7 +106,7 @@ export type ApiComment = {
   created_at?: string
   id: number
   post_id: number
-  user?: Pick<ApiUser, 'id' | 'name'>
+  user?: Pick<ApiUser, 'id' | 'is_verified' | 'name' | 'profile' | 'role'>
   user_id: number
 }
 
@@ -113,6 +117,8 @@ export type ApiPost = {
   created_at: string
   id: number
   image?: string | null
+  is_liked?: boolean
+  likes_count?: number
   title: string
   user?: ApiUser
   user_id: number

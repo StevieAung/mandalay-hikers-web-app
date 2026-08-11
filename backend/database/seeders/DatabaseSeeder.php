@@ -32,6 +32,7 @@ class DatabaseSeeder extends Seeder
             'email' => 'verified.organizer@mandalayhikes.test',
             'password' => Hash::make('password'),
             'role' => 'organizer',
+            'is_verified' => true,
         ]);
 
         $explorer = User::factory()->create([
@@ -166,16 +167,57 @@ class DatabaseSeeder extends Seeder
 
         $sunriseWalk->participants()->attach($explorer->id, ['attendance_status' => 'joined']);
 
-        $post = Post::create([
+        $sunrisePost = Post::create([
             'user_id' => $explorer->id,
             'title' => 'First sunrise hike at Mandalay Hill',
             'body' => 'The route was friendly for beginners, but starting before sunrise made the view much better. Bring water even for short climbs.',
             'image' => $trails[0]->getRawOriginal('cover_image'),
+            'created_at' => now()->subDays(6),
+            'updated_at' => now()->subDays(6),
         ]);
 
-        $post->comments()->create([
+        $sunrisePost->comments()->create([
             'user_id' => $verifiedOrganizer->id,
             'body' => 'Glad it went well. The south stairway is the easiest start if you bring first-time hikers along.',
         ]);
+
+        $sunrisePost->likes()->attach([$verifiedOrganizer->id, $admin->id]);
+
+        $waterfallPost = Post::create([
+            'user_id' => $verifiedOrganizer->id,
+            'title' => 'Dee Dote is running high after the weekend rain',
+            'body' => 'Checked the waterfall route this morning. The pools are full and the last descent is slick, so grip shoes are not optional right now. I am keeping group sizes small until the rocks dry out.',
+            'image' => $trails[1]->getRawOriginal('cover_image'),
+            'created_at' => now()->subDays(3),
+            'updated_at' => now()->subDays(3),
+        ]);
+
+        $waterfallPost->comments()->create([
+            'user_id' => $explorer->id,
+            'body' => 'Matches what I saw on Sunday. I slipped twice on the way down even with decent shoes.',
+        ]);
+
+        $waterfallPost->comments()->create([
+            'user_id' => $admin->id,
+            'body' => 'Thanks for flagging it. I have left the trail report open until conditions improve.',
+        ]);
+
+        $waterfallPost->likes()->attach([$explorer->id, $admin->id]);
+
+        $gearPost = Post::create([
+            'user_id' => $explorer->id,
+            'title' => 'What is actually worth carrying on a Yankin Hill loop?',
+            'body' => 'Three litres of water felt like too much for a three hour loop. I would swap one bottle for electrolyte sachets and a proper hat next time. Curious what everyone else packs.',
+            'image' => null,
+            'created_at' => now()->subDay(),
+            'updated_at' => now()->subDay(),
+        ]);
+
+        $gearPost->comments()->create([
+            'user_id' => $verifiedOrganizer->id,
+            'body' => 'Two litres plus sachets is what I brief my groups on. Add a small first-aid kit and you are set for the loop.',
+        ]);
+
+        $gearPost->likes()->attach([$verifiedOrganizer->id]);
     }
 }

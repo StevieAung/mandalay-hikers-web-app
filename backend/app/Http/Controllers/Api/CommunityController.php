@@ -9,9 +9,14 @@ use Illuminate\Http\Request;
 
 class CommunityController extends Controller
 {
-    public function posts()
+    public function posts(Request $request)
     {
-        return Post::with(['user:id,name,email,role', 'comments.user:id,name'])->withCount('comments')->latest()->paginate(12);
+        return $this->feedQuery($request)->latest()->paginate(12);
+    }
+
+    public function post(Request $request, Post $post)
+    {
+        return $this->feedQuery($request)->findOrFail($post->id);
     }
 
     public function storePost(Request $request)
@@ -19,20 +24,41 @@ class CommunityController extends Controller
         $data = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'body' => ['required', 'string'],
-            'image' => ['nullable'],
+            'image' => ['nullable', 'image', 'mimes:jpeg,jpg,png,webp', 'max:6144'],
         ]);
 
         $data['user_id'] = $request->user()->id;
         $data['image'] = $this->storeImage($request, 'image', 'posts');
 
-        return response()->json(Post::create($data)->load('user:id,name,role'), 201);
+        $post = Post::create($data);
+
+        return response()->json($this->feedQuery($request)->findOrFail($post->id), 201);
     }
 
     public function comment(Request $request, Post $post)
     {
         $data = $request->validate(['body' => ['required', 'string']]);
 
-        return response()->json($post->comments()->create($data + ['user_id' => $request->user()->id])->load('user:id,name'), 201);
+        $comment = $post->comments()->create($data + ['user_id' => $request->user()->id]);
+
+        return response()->json(
+            $comment->load(['user:id,name,role,is_verified', 'user.profile:id,user_id,avatar']),
+            201,
+        );
+    }
+
+    public function like(Request $request, Post $post)
+    {
+        $post->likes()->syncWithoutDetaching([$request->user()->id]);
+
+        return ['liked' => true, 'likes_count' => $post->likes()->count()];
+    }
+
+    public function unlike(Request $request, Post $post)
+    {
+        $post->likes()->detach($request->user()->id);
+
+        return ['liked' => false, 'likes_count' => $post->likes()->count()];
     }
 
     public function deletePost(Request $request, Post $post)
@@ -55,5 +81,26 @@ class CommunityController extends Controller
         $comment->delete();
 
         return response()->noContent();
+    }
+
+    /**
+     * Every read path shares this shape so the newsfeed renders the same card
+     * whether it came from the list, the permalink, or a fresh publish.
+     */
+    private function feedQuery(Request $request)
+    {
+        $viewer = $request->user('sanctum');
+
+        return Post::with([
+            'user:id,name,email,role,is_verified',
+            'user.profile:id,user_id,avatar',
+            'comments' => fn ($query) => $query->oldest(),
+            'comments.user:id,name,role,is_verified',
+            'comments.user.profile:id,user_id,avatar',
+        ])
+            ->withCount(['comments', 'likes'])
+            ->when($viewer, fn ($query) => $query->withExists([
+                'likes as is_liked' => fn ($sub) => $sub->where('users.id', $viewer->id),
+            ]));
     }
 }

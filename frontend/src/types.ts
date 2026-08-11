@@ -5,6 +5,7 @@ export type AuthMode = 'login' | 'register'
 
 export type User = {
   id?: number
+  is_verified?: boolean
   name: string
   email: string
   role: UserRole

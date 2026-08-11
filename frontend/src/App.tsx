@@ -11,6 +11,7 @@ import { ToastProvider } from './context/ToastContext'
 import AdminEntryPage from './pages/AdminEntryPage'
 import AuthPage from './pages/AuthPage'
 import CommunityPage from './pages/CommunityPage'
+import PostPage from './pages/PostPage'
 import CreateEventPage from './pages/CreateEventPage'
 import EventDetailPage from './pages/EventDetailPage'
 import EventsPage from './pages/EventsPage'
@@ -39,6 +40,7 @@ function App() {
                   <Route path="/events" element={<EventsPage />} />
                   <Route path="/events/:id" element={<EventDetailPage />} />
                   <Route path="/community" element={<CommunityPage />} />
+                  <Route path="/community/:postId" element={<PostPage />} />
                   <Route path="/profiles/:id" element={<ExplorerProfilePage />} />
                   <Route path="/organizers/:id" element={<OrganizerProfilePage />} />
                 </Route>

@@ -59,7 +59,9 @@ data layer left in the frontend.
 - Trail details with gallery, map, ratings, favorite toggle, and condition reports
 - Event listing, detail, join and leave, organizer event creation, participant
   roster, and attendance marking
-- Community posts, comments, and delete-your-own moderation
+- Community newsfeed with likes, comments, verified-account badges,
+  per-post permalinks, sharing to other social platforms, and
+  delete-your-own moderation
 - Organizer application submitted to the API and approved from the admin queue,
   which promotes the account to organizer
 - Admin dashboard, users, organizer applications, trails, events, reports, posts

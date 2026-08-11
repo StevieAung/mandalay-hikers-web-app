@@ -14,6 +14,7 @@ Route::get('/trails/{trail}', [TrailController::class, 'show']);
 Route::get('/events', [EventController::class, 'index']);
 Route::get('/events/{event}', [EventController::class, 'show']);
 Route::get('/posts', [CommunityController::class, 'posts']);
+Route::get('/posts/{post}', [CommunityController::class, 'post']);
 Route::get('/profiles/{user}', [ProfileController::class, 'show']);
 
 Route::post('/auth/register', [AuthController::class, 'register']);
@@ -36,6 +37,8 @@ Route::middleware(['auth:sanctum', 'not.banned'])->group(function () {
 
     Route::post('/posts', [CommunityController::class, 'storePost']);
     Route::post('/posts/{post}/comments', [CommunityController::class, 'comment']);
+    Route::post('/posts/{post}/like', [CommunityController::class, 'like']);
+    Route::delete('/posts/{post}/like', [CommunityController::class, 'unlike']);
     Route::delete('/posts/{post}', [CommunityController::class, 'deletePost']);
     Route::delete('/comments/{comment}', [CommunityController::class, 'deleteComment']);
 
