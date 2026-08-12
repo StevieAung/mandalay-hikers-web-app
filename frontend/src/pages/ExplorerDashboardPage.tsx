@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { Stat } from '../components/Cards'
 import { DateCard, PortalSection, PortalShell, SavedTrail } from '../components/Portal'
 import { TrekCalendar } from '../components/TrekCalendar'
 import { useAuth } from '../context/useAuth'
+import { useLocale } from '../context/useLocale'
 import type { ProfilePayload } from '../types/api'
 import { ApiError, apiRequest } from '../utils/api'
 import {
@@ -15,11 +17,11 @@ import {
 
 export default function ExplorerDashboardPage() {
   const { authToken, user } = useAuth()
+  const { t } = useLocale()
   const [dashboard, setDashboard] = useState<ProfilePayload | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(Boolean(authToken))
   const [selectedDay, setSelectedDay] = useState<string | null>(null)
-  const application = dashboard?.latest_organizer_application
 
   useEffect(() => {
     if (!authToken) return
@@ -32,64 +34,59 @@ export default function ExplorerDashboardPage() {
         setDashboard(response)
         setError(null)
       } catch (requestError) {
-        setError(
-          requestError instanceof ApiError
-            ? requestError.message
-            : 'Could not load your dashboard data.',
-        )
+        setError(requestError instanceof ApiError ? requestError.message : t('dashboard.loadError'))
       } finally {
         setIsLoading(false)
       }
     }
 
     void loadDashboard()
-  }, [authToken])
+  }, [authToken, t])
 
   const joinedEvents = dashboard?.joined_events ?? []
   const favoriteTrails = dashboard?.favorites ?? []
   const myPosts = dashboard?.posts ?? []
-  const completedCount = dashboard?.user.joined_events_count ?? 0
   const visibleTreks = selectedDay
     ? joinedEvents.filter((event) => toDayKey(event.starts_at) === selectedDay)
     : joinedEvents
 
   return (
     <PortalShell active="explorer">
-      <div className="portal-top">
+      <div className="dashboard-welcome-banner">
         <div>
-          <span className="label orange-text">Current View</span>
-          <h1>Explorer Dashboard</h1>
-        </div>
-        {user?.id && (
-          <Link className="button outline" to={`/profiles/${user.id}`}>
-            View my profile
-          </Link>
-        )}
-      </div>
-      <div className="explorer-hero-row">
-        <article className="dark-callout">
-          <h2>Welcome back, {user?.name || 'Explorer'}.</h2>
-          <p>
-            Your explorer account can browse trails, join hikes, save favorites, and apply to lead
-            community events.
+          <span className="label orange-text">{t('dashboard.currentView')}</span>
+          <h1>{t('dashboard.title')}</h1>
+          <p className="portal-top-description">
+            {t('dashboard.welcomeBack')} {user?.name || t('dashboard.explorerFallback')}.{' '}
+            {t('dashboard.welcomeSummary')}
           </p>
-          <Link className="button cta" to="/organizer/apply">
-            {application ? `Application ${application.status}` : 'Apply to Organize'}
-          </Link>
-        </article>
-        <article className="completion-card">
-          <span>Account Activity</span>
-          <strong>{completedCount}</strong>
-          <p>Joined Treks</p>
-          <div>
-            <i />
+        </div>
+        <div className="portal-top-actions">
+          <div className="portal-top-stats">
+            <div className="portal-top-stat-card">
+              <Stat label={t('dashboard.statsTreks')} value={String(joinedEvents.length)} />
+            </div>
+            <div className="portal-top-stat-card">
+              <Stat label={t('dashboard.statsSaved')} value={String(favoriteTrails.length)} />
+            </div>
+            <div className="portal-top-stat-card">
+              <Stat label={t('dashboard.statsPosts')} value={String(myPosts.length)} />
+            </div>
           </div>
-        </article>
+          {user?.id && (
+            <Link className="button outline" to={`/profiles/${user.id}`}>
+              {t('dashboard.viewProfile')}
+            </Link>
+          )}
+        </div>
       </div>
       {error && <p className="table-empty danger">{error}</p>}
-      <PortalSection title="Upcoming Treks" meta={`${joinedEvents.length} Scheduled`}>
+      <PortalSection
+        title={t('dashboard.upcomingTreks')}
+        meta={`${joinedEvents.length} ${t('dashboard.scheduled')}`}
+      >
         {isLoading ? (
-          <p className="table-empty">Loading joined events...</p>
+          <p className="table-empty">{t('dashboard.loadingEvents')}</p>
         ) : joinedEvents.length ? (
           <div className="trek-calendar-layout">
             <TrekCalendar
@@ -102,6 +99,7 @@ export default function ExplorerDashboardPage() {
                 visibleTreks.map((event) => (
                   <DateCard
                     date={formatDate(event.starts_at)}
+                    dateLabel={t('dashboard.dateLabel')}
                     key={event.id}
                     place={event.destination}
                     status={event.status}
@@ -110,51 +108,56 @@ export default function ExplorerDashboardPage() {
                   />
                 ))
               ) : (
-                <p className="table-empty">No treks on the selected day.</p>
+                <p className="table-empty">{t('dashboard.noTreksOnDay')}</p>
               )}
             </div>
           </div>
         ) : (
           <p className="table-empty">
-            You have not joined any upcoming treks yet. <Link to="/events">Browse events</Link>
+            {t('dashboard.noJoinedTreks')} <Link to="/events">{t('dashboard.browseEvents')}</Link>
           </p>
         )}
       </PortalSection>
-      <PortalSection title="Saved Trails" meta={`${favoriteTrails.length} Bookmarked`}>
+      <PortalSection
+        title={t('dashboard.savedTrails')}
+        meta={`${favoriteTrails.length} ${t('dashboard.bookmarked')}`}
+      >
         {isLoading ? (
-          <p className="table-empty">Loading saved trails...</p>
+          <p className="table-empty">{t('dashboard.loadingSaved')}</p>
         ) : favoriteTrails.length ? (
           <div className="saved-grid">
             {favoriteTrails.map((trail) => (
               <SavedTrail
-                elev={`Elev: ${trail.elevation_m}m`}
+                elev={`${t('card.elevation')}: ${trail.elevation_m}m`}
                 image={trail.cover_image || ''}
                 key={trail.id}
                 meta={`${trail.difficulty} - ${formatDistance(trail.distance_km)}`}
                 title={trail.name}
+                to={`/trails/${trail.id}`}
+                trekNowLabel={t('dashboard.trekNow')}
               />
             ))}
           </div>
         ) : (
           <p className="table-empty">
-            No saved trails yet. <Link to="/trails">Find a trail</Link>
+            {t('dashboard.noSavedTrails')} <Link to="/trails">{t('dashboard.findTrail')}</Link>
           </p>
         )}
       </PortalSection>
-      <PortalSection title="My Community Posts" meta={`${myPosts.length} Shared`}>
+      <PortalSection
+        title={t('dashboard.myPosts')}
+        meta={`${myPosts.length} ${t('dashboard.shared')}`}
+      >
         {isLoading ? (
-          <p className="table-empty">Loading your posts...</p>
+          <p className="table-empty">{t('dashboard.loadingPosts')}</p>
         ) : myPosts.length ? (
           <div className="profile-post-grid">
             {myPosts.map((post) => (
               <Link className="profile-post-card" key={post.id} to={`/community/${post.id}`}>
-                {post.image ? (
-                  <img src={post.image} alt={post.title} />
-                ) : (
-                  <span className="image-placeholder">No image</span>
-                )}
+                {post.image && <img src={post.image} alt={post.title} />}
                 <span>
-                  {formatRelativeTime(post.created_at)} - {post.comments_count ?? 0} comments
+                  {formatRelativeTime(post.created_at)} - {post.comments_count ?? 0}{' '}
+                  {t('community.commentCount')}
                 </span>
                 <h3>{post.title}</h3>
               </Link>
@@ -162,7 +165,7 @@ export default function ExplorerDashboardPage() {
           </div>
         ) : (
           <p className="table-empty">
-            You have not shared any community posts yet. <Link to="/community">Post an update</Link>
+            {t('dashboard.noPosts')} <Link to="/community">{t('dashboard.postUpdate')}</Link>
           </p>
         )}
       </PortalSection>

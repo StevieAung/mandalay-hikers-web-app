@@ -911,7 +911,7 @@ function Overview({
   return (
     <>
       <div className="portal-stats admin-kpis">
-        <Metric title="Users" value={String(dashboard?.total_users ?? 0)} />
+        <Metric title="Users" value={String(dashboard?.total_users ?? 0)} to="/admin/users" />
         <Metric title="Organizers" value={String(dashboard?.total_organizers ?? 0)} />
         <Metric title="Upcoming" value={String(dashboard?.upcoming_events ?? 0)} />
         <Metric title="Pending" value={String(dashboard?.pending_applications ?? 0)} accent />
@@ -923,12 +923,14 @@ function Overview({
           rows={(dashboard?.latest_registrations ?? []).map(
             (user) => `${user.name} - ${user.role}`,
           )}
+          to="/admin/users"
         />
         <OverviewPanel
           title="Popular Trails"
           rows={(dashboard?.popular_trails ?? []).map(
             (trail) => `${trail.name} - ${trail.events_count ?? 0} events`,
           )}
+          to="/admin/trails"
         />
         <OverviewPanel
           title="Attention Queue"
@@ -951,14 +953,24 @@ function OverviewPanel({
   links = false,
   rows,
   title,
+  to,
 }: {
   links?: boolean
   rows: string[]
   title: string
+  to?: string
 }) {
   return (
     <section className="admin-panel">
-      <h2>{title}</h2>
+      <div className="admin-panel-head">
+        <h2>{title}</h2>
+        {to && (
+          <Link className="admin-panel-link" to={to}>
+            View all
+            <i className="material-symbols-outlined">arrow_outward</i>
+          </Link>
+        )}
+      </div>
       {rows.map((row) =>
         links ? (
           <Link key={row} to={row}>

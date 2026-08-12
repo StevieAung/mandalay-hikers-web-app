@@ -111,11 +111,7 @@ export function PostPreview({ post }: { post: ApiPost }) {
 
   return (
     <article className="post-preview">
-      {post.image ? (
-        <img src={post.image} alt={post.title} />
-      ) : (
-        <span className="image-placeholder">No image</span>
-      )}
+      {post.image && <img src={post.image} alt={post.title} />}
       <div>
         <Link className="post-preview-author" to={authorPath}>
           {post.user?.name || 'Community member'}

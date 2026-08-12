@@ -16,10 +16,10 @@ export function Sidebar({ active, onNavigate }: { active: SidebarRole; onNavigat
     organizer: [['organizer', '/organizer-dashboard', 'event_note', 'Organizer']],
     admin: [
       ['overview', '/admin', 'dashboard', 'Overview'],
-      ['applications', '/admin/applications', 'how_to_reg', 'Applications'],
       ['users', '/admin/users', 'group', 'Users'],
       ['trails', '/admin/trails', 'hiking', 'Trails'],
       ['events', '/admin/events', 'event', 'Events'],
+      ['applications', '/admin/applications', 'how_to_reg', 'Applications'],
       ['posts', '/admin/posts', 'forum', 'Posts'],
       ['reports', '/admin/reports', 'flag', 'Reports'],
     ],
@@ -170,6 +170,7 @@ export function DateCard({
   title,
   place,
   status,
+  dateLabel = 'Date',
   muted = false,
 }: {
   date: string
@@ -177,12 +178,13 @@ export function DateCard({
   title: string
   place: string
   status: string
+  dateLabel?: string
   muted?: boolean
 }) {
   return (
     <article className={muted ? 'date-card muted' : 'date-card'}>
       <div>
-        <span>Date</span>
+        <span>{dateLabel}</span>
         <strong>{date}</strong>
         <small>{time}</small>
       </div>
@@ -203,11 +205,15 @@ export function SavedTrail({
   meta,
   elev,
   image,
+  to,
+  trekNowLabel = 'Trek Now',
 }: {
   title: string
   meta: string
   elev: string
   image: string
+  to: string
+  trekNowLabel?: string
 }) {
   return (
     <article className="saved-trail">
@@ -230,7 +236,7 @@ export function SavedTrail({
       )}
       <p>
         {elev}
-        <Link to="/trails">Trek Now</Link>
+        <Link to={to}>{trekNowLabel}</Link>
       </p>
     </article>
   )
@@ -303,6 +309,7 @@ export function Metric({
   accent = false,
   danger = false,
   alert = false,
+  to,
 }: {
   title: string
   value: string
@@ -310,12 +317,18 @@ export function Metric({
   accent?: boolean
   danger?: boolean
   alert?: boolean
+  to?: string
 }) {
   return (
     <article className="portal-metric">
       <span>{title}</span>
       <strong className={danger ? 'danger' : accent || alert ? 'accent' : ''}>{value}</strong>
       {icon && <i className="material-symbols-outlined">{icon}</i>}
+      {to && (
+        <Link aria-label={`View ${title}`} className="portal-metric-link" to={to}>
+          <i className="material-symbols-outlined">arrow_outward</i>
+        </Link>
+      )}
     </article>
   )
 }

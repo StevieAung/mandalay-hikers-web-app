@@ -47,3 +47,5 @@ backend/coverage/
 .cache/
 tmp/
 temp/
+
+docs/

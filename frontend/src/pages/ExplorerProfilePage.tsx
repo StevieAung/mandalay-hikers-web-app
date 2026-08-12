@@ -129,11 +129,7 @@ export default function ExplorerProfilePage() {
               <div className="profile-post-grid">
                 {profile.posts.map((post) => (
                   <article key={post.id} className="profile-post-card">
-                    {post.image ? (
-                      <img src={post.image} alt={post.title} />
-                    ) : (
-                      <span className="image-placeholder">No image</span>
-                    )}
+                    {post.image && <img src={post.image} alt={post.title} />}
                     <span>{post.comments_count ?? 0} comments</span>
                     <h3>{post.title}</h3>
                   </article>

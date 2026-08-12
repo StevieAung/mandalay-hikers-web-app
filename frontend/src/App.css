@@ -3365,6 +3365,10 @@ a.feed-time:hover {
   grid-template-columns: repeat(3, 1fr);
 }
 
+.portal-section .profile-post-grid {
+  gap: 18px;
+}
+
 .profile-post-card {
   background: var(--surface-low);
   display: block;
@@ -3645,6 +3649,34 @@ a.feed-time:hover {
   margin: 0 0 16px;
 }
 
+.admin-panel-head {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
+.admin-panel-head h2 {
+  margin-bottom: 0;
+}
+
+.admin-panel-head .admin-panel-link {
+  align-items: center;
+  border-top: 0;
+  color: var(--burnt);
+  display: inline-flex;
+  gap: 4px;
+  padding: 0;
+  white-space: nowrap;
+}
+
+.admin-panel-link .material-symbols-outlined {
+  font-size: 16px;
+}
+
+.admin-panel-link:hover {
+  text-decoration: underline;
+}
+
 .admin-panel p,
 .admin-panel a {
   border-top: 1px solid var(--fog);
@@ -3906,6 +3938,82 @@ a.feed-time:hover {
   font-weight: 400;
 }
 
+.portal-top-description {
+  color: var(--stone);
+  margin: 14px 0 0;
+  max-width: 460px;
+}
+
+.portal-top-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 28px;
+}
+
+.portal-top-stats {
+  display: flex;
+  gap: 12px;
+}
+
+.portal-top-stat-card {
+  background: var(--surface);
+  border: 1px solid var(--fog);
+  border-radius: 2px;
+  min-width: 84px;
+  padding: 12px 18px;
+}
+
+.portal-top-stat-card .stat span {
+  margin-bottom: 4px;
+}
+
+.dashboard-welcome-banner {
+  align-items: center;
+  background: var(--forest);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  justify-content: space-between;
+  margin-bottom: 32px;
+  padding: 32px 36px;
+}
+
+.dashboard-welcome-banner h1 {
+  color: white;
+  font-family: var(--display);
+  font-size: 26px;
+  font-weight: 400;
+  margin: 8px 0 0;
+}
+
+.dashboard-welcome-banner .orange-text {
+  color: var(--orange);
+}
+
+.dashboard-welcome-banner .portal-top-description {
+  color: #cbead7;
+  margin: 10px 0 0;
+}
+
+.dashboard-welcome-banner .portal-top-stat-card {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.24);
+}
+
+.dashboard-welcome-banner .portal-top-stat-card .stat span {
+  color: #cbead7;
+}
+
+.dashboard-welcome-banner .portal-top-stat-card .stat strong {
+  color: var(--orange);
+}
+
+.dashboard-welcome-banner .button.outline {
+  border-color: rgba(255, 255, 255, 0.5);
+  color: white;
+}
+
 .orange-text {
   color: var(--burnt);
 }
@@ -3945,13 +4053,6 @@ a.feed-time:hover {
   margin-right: 8px;
 }
 
-.explorer-hero-row {
-  display: grid;
-  gap: 30px;
-  grid-template-columns: 2fr 1fr;
-  margin-bottom: 70px;
-}
-
 .dark-callout {
   background: var(--forest);
   color: #cbead7;
@@ -3965,53 +4066,15 @@ a.feed-time:hover {
   margin: 0 0 24px;
 }
 
-.completion-card {
-  background: var(--surface-high);
-  padding: 46px;
-}
-
-.completion-card span {
-  font-family: var(--display);
-  font-size: 22px;
-  text-transform: uppercase;
-}
-
-.completion-card strong {
-  color: var(--burnt);
-  font-family: var(--display);
-  font-size: 70px;
-  font-weight: 300;
-}
-
-.completion-card p {
-  display: inline;
-  font-family: var(--mono);
-  font-size: 22px;
-  letter-spacing: 0.18em;
-}
-
-.completion-card div {
-  background: var(--fog);
-  height: 6px;
-  margin-top: 32px;
-}
-
-.completion-card i {
-  background: var(--burnt);
-  display: block;
-  height: 100%;
-  width: 84%;
-}
-
 .portal-section {
-  margin-top: 42px;
+  margin-top: 30px;
 }
 
 .portal-section-head {
   align-items: center;
   display: flex;
   justify-content: space-between;
-  margin-bottom: 30px;
+  margin-bottom: 20px;
 }
 
 .portal-section h2 {
@@ -4041,7 +4104,7 @@ a.feed-time:hover {
 
 .trek-list {
   display: grid;
-  gap: 20px;
+  gap: 14px;
 }
 
 .trek-calendar {
@@ -4168,8 +4231,8 @@ a.feed-time:hover {
 
 .date-card {
   display: grid;
-  grid-template-columns: 170px 1fr auto;
-  min-height: 160px;
+  grid-template-columns: 140px 1fr auto;
+  min-height: 120px;
 }
 
 .date-card > div {
@@ -4190,7 +4253,7 @@ a.feed-time:hover {
 }
 
 .date-card section {
-  padding: 34px;
+  padding: 20px;
 }
 
 .date-card h3 {
@@ -4219,7 +4282,7 @@ a.feed-time:hover {
 
 .saved-grid {
   display: grid;
-  gap: 30px;
+  gap: 18px;
   grid-template-columns: repeat(4, 1fr);
 }
 
@@ -4387,6 +4450,38 @@ a.feed-time:hover {
   font-size: 40px;
   position: absolute;
   right: 26px;
+}
+
+.portal-metric-link {
+  align-items: center;
+  background: var(--surface-low);
+  border: 1px solid var(--fog);
+  color: var(--stone);
+  display: flex;
+  height: 30px;
+  justify-content: center;
+  position: absolute;
+  right: 14px;
+  top: 14px;
+  width: 30px;
+}
+
+.portal-metric-link:hover {
+  border-color: var(--burnt);
+  color: var(--burnt);
+}
+
+.portal-metric .portal-metric-link i {
+  bottom: auto;
+  color: inherit;
+  font-size: 18px;
+  position: static;
+  right: auto;
+}
+
+.admin-kpis .portal-metric-link {
+  right: 10px;
+  top: 10px;
 }
 
 .command-title {
@@ -4777,7 +4872,6 @@ a.feed-time:hover {
   .events-head,
   .featured-event,
   .safety-band,
-  .explorer-hero-row,
   .trek-calendar-layout,
   .profile-layout {
     grid-template-columns: 1fr;
@@ -4874,6 +4968,7 @@ a.feed-time:hover {
   .footer,
   .portal-top,
   .portal-title-row,
+  .dashboard-welcome-banner,
   .section-head,
   .profile-identity,
   .profile-panel-head {

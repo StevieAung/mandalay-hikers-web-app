@@ -283,6 +283,55 @@ const translations = {
   'profile.participants': ['Participants', 'ပါဝင်သူများ'],
   'profile.avgRating': ['Avg. rating', 'ပျမ်းမျှအဆင့်'],
   'profile.upcoming': ['Upcoming Events', 'လာမည့် ခရီးစဉ်များ'],
+  'dashboard.currentView': ['Current View', 'လက်ရှိ မြင်ကွင်း'],
+  'dashboard.title': ['Explorer Dashboard', 'တောင်တက်သူ ဒက်ရှ်ဘုတ်'],
+  'dashboard.welcomeBack': ['Welcome back,', 'ပြန်လည်ကြိုဆိုပါတယ်၊'],
+  'dashboard.welcomeSummary': [
+    'Here is a quick look at your upcoming treks, saved trails, and community posts.',
+    'သင့်လာမည့်ခရီးစဉ်များ၊ သိမ်းထားသောလမ်းကြောင်းများနှင့် အသိုင်းအဝိုင်းပို့စ်များကို လျင်မြန်စွာ ကြည့်ရှုနိုင်ပါသည်။',
+  ],
+  'dashboard.explorerFallback': ['Explorer', 'တောင်တက်သူ'],
+  'dashboard.statsTreks': ['Treks', 'ခရီးစဉ်များ'],
+  'dashboard.statsSaved': ['Saved', 'သိမ်းထားသည်'],
+  'dashboard.statsPosts': ['Posts', 'ပို့စ်များ'],
+  'dashboard.viewProfile': ['View my profile', 'ကျွန်ုပ်၏ ပရိုဖိုင်ကြည့်ရန်'],
+  'dashboard.loadError': [
+    'Could not load your dashboard data.',
+    'သင့်ဒက်ရှ်ဘုတ် အချက်အလက်များကို ဖတ်၍မရပါ။',
+  ],
+  'dashboard.upcomingTreks': ['Upcoming Treks', 'လာမည့် ခရီးစဉ်များ'],
+  'dashboard.scheduled': ['Scheduled', 'စီစဉ်ထားသည်'],
+  'dashboard.loadingEvents': [
+    'Loading joined events...',
+    'ပါဝင်ထားသော ခရီးစဉ်များ ဖတ်နေသည်...',
+  ],
+  'dashboard.dateLabel': ['Date', 'ရက်စွဲ'],
+  'dashboard.noTreksOnDay': [
+    'No treks on the selected day.',
+    'ရွေးထားသောရက်တွင် ခရီးစဉ် မရှိပါ။',
+  ],
+  'dashboard.noJoinedTreks': [
+    'You have not joined any upcoming treks yet.',
+    'သင် လာမည့်ခရီးစဉ်များတွင် မပါဝင်ရသေးပါ။',
+  ],
+  'dashboard.browseEvents': ['Browse events', 'ခရီးစဉ်များ ရှာဖွေရန်'],
+  'dashboard.savedTrails': ['Saved Trails', 'သိမ်းထားသော လမ်းကြောင်းများ'],
+  'dashboard.bookmarked': ['Bookmarked', 'မှတ်သားထားသည်'],
+  'dashboard.loadingSaved': [
+    'Loading saved trails...',
+    'သိမ်းထားသော လမ်းကြောင်းများ ဖတ်နေသည်...',
+  ],
+  'dashboard.noSavedTrails': ['No saved trails yet.', 'သိမ်းထားသော လမ်းကြောင်း မရှိသေးပါ။'],
+  'dashboard.findTrail': ['Find a trail', 'လမ်းကြောင်း ရှာရန်'],
+  'dashboard.trekNow': ['Trek Now', 'ယခုသွားရန်'],
+  'dashboard.myPosts': ['My Community Posts', 'ကျွန်ုပ်၏ အသိုင်းအဝိုင်း ပို့စ်များ'],
+  'dashboard.shared': ['Shared', 'မျှဝေထားသည်'],
+  'dashboard.loadingPosts': ['Loading your posts...', 'သင့်ပို့စ်များ ဖတ်နေသည်...'],
+  'dashboard.noPosts': [
+    'You have not shared any community posts yet.',
+    'သင် အသိုင်းအဝိုင်းပို့စ် မမျှဝေရသေးပါ။',
+  ],
+  'dashboard.postUpdate': ['Post an update', 'အပ်ဒိတ်တစ်ခု တင်ရန်'],
 } as const
 
 export type TranslationKey = keyof typeof translations
