@@ -134,11 +134,8 @@ class DatabaseSeeder extends Seeder
             'review' => 'Beautiful pools and shaded rest stops. Grip shoes are essential on the rocks.',
         ]);
 
-        OrganizerApplication::create([
-            'user_id' => $explorer->id,
-            'reason' => 'I have walked every Mandalay Hill route this year and want to lead beginner sunrise groups safely.',
-            'status' => 'pending',
-        ]);
+        // The explorer deliberately has no application, so the apply form can be
+        // submitted from a clean state during a demo.
 
         $explorer->favorites()->attach([$trails[0]->id, $trails[1]->id]);
 
