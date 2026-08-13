@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import type { ReactNode } from 'react'
 import { Link, Navigate, useLocation, useSearchParams } from 'react-router-dom'
 import { Metric, PortalShell } from '../components/Portal'
 import { TrailMap } from '../components/TrailMap'
@@ -375,6 +376,13 @@ export default function AdminDashboardPage() {
       ) : (
         <>
           <AdminFilters
+            action={
+              view === 'trails' ? (
+                <button className="button cta" onClick={() => void openTrailEditor()} type="button">
+                  Create Trail
+                </button>
+              ) : undefined
+            }
             key={requestKey}
             view={view}
             query={query}
@@ -746,62 +754,55 @@ export default function AdminDashboardPage() {
     if (view === 'trails') {
       const trails = rows as ApiTrail[]
       return (
-        <>
-          <div className="admin-table-toolbar">
-            <button className="button cta" onClick={() => void openTrailEditor()} type="button">
-              Create Trail
-            </button>
-          </div>
-          <AdminTable headers={['Trail', 'Difficulty', 'Status', 'Distance', 'Season', 'Actions']}>
-            {trails.map((row) => (
-              <tr
-                className="clickable-row"
-                key={row.id}
-                onClick={() => void openTrailEditor(row)}
-                tabIndex={0}
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter' || event.key === ' ') {
-                    event.preventDefault()
+        <AdminTable headers={['Trail', 'Difficulty', 'Status', 'Distance', 'Season', 'Actions']}>
+          {trails.map((row) => (
+            <tr
+              className="clickable-row"
+              key={row.id}
+              onClick={() => void openTrailEditor(row)}
+              tabIndex={0}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault()
+                  void openTrailEditor(row)
+                }
+              }}
+            >
+              <td>
+                <strong>{row.name}</strong>
+                <small>{row.location}</small>
+              </td>
+              <td>
+                <b className="status pending">{row.difficulty}</b>
+              </td>
+              <td>
+                <b className={`status ${row.status || 'open'}`}>{trailStatusLabel(row.status)}</b>
+              </td>
+              <td>{Number(row.distance_km).toFixed(1)} km</td>
+              <td>{row.best_season || 'Any season'}</td>
+              <td className="row-actions">
+                <button
+                  onClick={(event) => {
+                    event.stopPropagation()
                     void openTrailEditor(row)
-                  }
-                }}
-              >
-                <td>
-                  <strong>{row.name}</strong>
-                  <small>{row.location}</small>
-                </td>
-                <td>
-                  <b className="status pending">{row.difficulty}</b>
-                </td>
-                <td>
-                  <b className={`status ${row.status || 'open'}`}>{trailStatusLabel(row.status)}</b>
-                </td>
-                <td>{Number(row.distance_km).toFixed(1)} km</td>
-                <td>{row.best_season || 'Any season'}</td>
-                <td className="row-actions">
-                  <button
-                    onClick={(event) => {
-                      event.stopPropagation()
-                      void openTrailEditor(row)
-                    }}
-                    type="button"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={(event) => {
-                      event.stopPropagation()
-                      void removeTrail(row)
-                    }}
-                    type="button"
-                  >
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </AdminTable>
-        </>
+                  }}
+                  type="button"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={(event) => {
+                    event.stopPropagation()
+                    void removeTrail(row)
+                  }}
+                  type="button"
+                >
+                  Delete
+                </button>
+              </td>
+            </tr>
+          ))}
+        </AdminTable>
       )
     }
 
@@ -1025,11 +1026,13 @@ function OverviewPanel({
 }
 
 function AdminFilters({
+  action,
   onApply,
   onReset,
   query,
   view,
 }: {
+  action?: ReactNode
   onApply: (next: Record<string, string>) => void
   onReset: () => void
   query: Record<string, string>
@@ -1168,6 +1171,7 @@ function AdminFilters({
       <button className="button outline" onClick={resetFilterForm} type="button">
         Reset
       </button>
+      {action && <div className="admin-filter-bar-action">{action}</div>}
     </form>
   )
 }

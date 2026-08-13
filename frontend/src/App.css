@@ -3851,6 +3851,10 @@ a.feed-time:hover {
   margin-bottom: 14px;
 }
 
+.admin-filter-bar-action {
+  margin-left: auto;
+}
+
 .admin-filter-bar input,
 .admin-filter-bar select,
 .admin-compact-table select {
@@ -3896,12 +3900,6 @@ a.feed-time:hover {
 .admin-option-group button.active {
   background: var(--orange);
   color: var(--burnt);
-}
-
-.admin-table-toolbar {
-  display: flex;
-  justify-content: flex-end;
-  padding: 12px;
 }
 
 .admin-table-scroll {
