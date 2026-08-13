@@ -61,7 +61,7 @@ const translations = {
   'card.distance': ['Dist', 'အကွာအဝေး'],
   'card.elevation': ['Elev', 'အမြင့်တက်မှု'],
   'card.registrationClosed': ['Registration Closed', 'စာရင်းပေးသွင်းခြင်း ပိတ်ထားသည်'],
-  'home.discover': ['Discover your next', 'သင်၏နောက်ခရီးကို ရှာဖွေပါ'],
+  'home.discover': ['Discover your next', 'သင်၏တောင်တက်ခရီးကို ရှာဖွေပါ'],
   'home.trek': ['Mandalay Trek', 'မန္တလေးတောင်တက်ခရီး'],
   'home.search': ['Search trail names...', 'လမ်းကြောင်းအမည်များ ရှာရန်…'],
   'home.difficulty': ['Difficulty', 'အခက်အခဲ'],
