@@ -105,6 +105,8 @@ export default function OrganizerDashboardPage() {
             : participant,
         ),
       )
+      // Approving/rejecting changes the event's seat and pending counts shown in the table.
+      setReloadToken((current) => current + 1)
     } catch (requestError) {
       showToast({
         message:
