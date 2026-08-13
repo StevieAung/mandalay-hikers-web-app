@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { ReactNode } from 'react'
-import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
+import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import AngleDown2 from 'reicon-react/icons/AngleDown2'
 import ShieldCheck from 'reicon-react/icons/ShieldCheck'
 import User from 'reicon-react/icons/User'
@@ -22,7 +22,13 @@ export function Header() {
   const { user, logout } = useAuth()
   const { t } = useLocale()
   const { pathname } = useLocation()
+  const navigate = useNavigate()
   const [open, setOpen] = useState(false)
+
+  const handleLogout = async () => {
+    await logout()
+    navigate('/')
+  }
   const portalPath = user ? dashboardPathForRole(user.role) : '/login'
   const profilePath =
     user?.id && user.role === 'organizer'
@@ -83,7 +89,7 @@ export function Header() {
                   {isVerifiedOrganizer ? 'Organizer Verified' : 'Organizer Application'}
                 </MenuLink>
               )}
-              <button type="button" onClick={logout}>
+              <button type="button" onClick={() => void handleLogout()}>
                 {t('nav.logout')}
               </button>
             </div>

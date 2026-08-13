@@ -10,7 +10,8 @@ class EventController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Event::with(['organizer:id,name,role', 'trail:id,name,difficulty'])->withCount('participants');
+        $query = Event::with(['organizer:id,name,role', 'trail:id,name,difficulty'])
+            ->withCount(['participants' => fn ($q) => $q->where('event_participants.attendance_status', 'joined')]);
 
         if ($request->query('mine')) {
             $user = $request->user('sanctum');
@@ -19,7 +20,8 @@ class EventController extends Controller
                 abort(401, 'Authentication is required to view your events.');
             }
 
-            $query->where('organizer_id', $user->id);
+            $query->where('organizer_id', $user->id)
+                ->withCount(['participants as pending_participants_count' => fn ($q) => $q->where('event_participants.attendance_status', 'pending')]);
         }
 
         if ($status = $request->query('status')) {
@@ -32,14 +34,15 @@ class EventController extends Controller
     public function show(Request $request, Event $event)
     {
         $event->load(['organizer:id,name,role,is_verified', 'trail', 'participants:id,name'])
-            ->loadCount('participants');
+            ->loadCount(['participants' => fn ($q) => $q->where('event_participants.attendance_status', 'joined')]);
 
         $viewer = $request->user('sanctum');
+        $participation = $viewer ? $event->participants()->whereKey($viewer->id)->first() : null;
+        $status = $participation?->pivot->attendance_status;
 
-        return $event->setAttribute(
-            'is_joined',
-            $viewer ? $event->participants()->whereKey($viewer->id)->exists() : false,
-        );
+        return $event
+            ->setAttribute('participation_status', $status)
+            ->setAttribute('is_joined', $status === 'joined');
     }
 
     public function store(Request $request)
@@ -79,27 +82,43 @@ class EventController extends Controller
             abort(422, 'Only upcoming events are open for joining.');
         }
 
-        if ($event->participants()->count() >= $event->participant_limit) {
+        $existing = $event->participants()->whereKey($request->user()->id)->first();
+
+        if ($existing && in_array($existing->pivot->attendance_status, ['pending', 'joined'], true)) {
+            abort(422, 'You have already requested to join this event.');
+        }
+
+        if ($this->joinedCount($event) >= $event->participant_limit) {
             abort(422, 'This event is already full.');
         }
 
-        $event->participants()->syncWithoutDetaching([$request->user()->id => ['attendance_status' => 'joined']]);
+        $event->participants()->syncWithoutDetaching([$request->user()->id => ['attendance_status' => 'pending']]);
 
-        return ['joined' => true, 'participants_count' => $event->participants()->count()];
+        return ['participation_status' => 'pending', 'participants_count' => $this->joinedCount($event)];
     }
 
     public function leave(Request $request, Event $event)
     {
         $event->participants()->detach($request->user()->id);
 
-        return ['joined' => false, 'participants_count' => $event->participants()->count()];
+        return ['participation_status' => null, 'participants_count' => $this->joinedCount($event)];
     }
 
     public function participants(Request $request, Event $event)
     {
         $this->authorizeOrganizer($request, $event);
 
-        return $event->participants()->select('users.id', 'name', 'email')->get();
+        // Pending requests surface first so the organizer sees what needs a decision.
+        return $event->participants()
+            ->select('users.id', 'name', 'email')
+            ->get()
+            ->sortBy(fn ($participant) => match ($participant->pivot->attendance_status) {
+                'pending' => 0,
+                'joined', 'attended', 'missed' => 1,
+                'rejected' => 2,
+                default => 3,
+            })
+            ->values();
     }
 
     public function attendance(Request $request, Event $event)
@@ -107,12 +126,31 @@ class EventController extends Controller
         $this->authorizeOrganizer($request, $event);
         $data = $request->validate([
             'user_id' => ['required', 'exists:users,id'],
-            'attendance_status' => ['required', 'in:joined,attended,missed'],
+            'attendance_status' => ['required', 'in:pending,joined,attended,missed,rejected'],
         ]);
+
+        if ($data['attendance_status'] === 'joined') {
+            $alreadyJoined = $this->joinedCount($event, exceptUserId: $data['user_id']);
+
+            if ($alreadyJoined >= $event->participant_limit) {
+                abort(422, 'This event is already full.');
+            }
+        }
 
         $event->participants()->updateExistingPivot($data['user_id'], ['attendance_status' => $data['attendance_status']]);
 
         return ['updated' => true];
+    }
+
+    private function joinedCount(Event $event, ?int $exceptUserId = null): int
+    {
+        $query = $event->participants()->wherePivot('attendance_status', 'joined');
+
+        if ($exceptUserId) {
+            $query->whereKeyNot($exceptUserId);
+        }
+
+        return $query->count();
     }
 
     private function authorizeOrganizer(Request $request, Event $event): void

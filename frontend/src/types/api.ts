@@ -76,7 +76,7 @@ export type ApiEventParticipant = {
   }
 }
 
-export type AttendanceStatus = 'joined' | 'attended' | 'missed'
+export type AttendanceStatus = 'attended' | 'joined' | 'missed' | 'pending' | 'rejected'
 
 export type ApiEvent = {
   cover_image?: string | null
@@ -90,6 +90,8 @@ export type ApiEvent = {
   participant_limit: number
   participants?: ApiEventParticipant[]
   participants_count?: number
+  participation_status?: AttendanceStatus | null
+  pending_participants_count?: number
   required_equipment?: string | null
   starts_at: string
   status: string

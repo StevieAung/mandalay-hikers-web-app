@@ -46,7 +46,7 @@ class HikingApiTest extends TestCase
         $this->actingAs($organizer)->postJson('/api/events', $payload)->assertCreated()->assertJsonPath('title', 'Saturday Sunrise Walk');
     }
 
-    public function test_join_event_enforces_capacity_and_prevents_duplicates(): void
+    public function test_join_event_creates_a_pending_request_that_waits_for_organizer_approval(): void
     {
         $trail = Trail::create($this->trailData());
         $organizer = User::factory()->create(['role' => 'organizer']);
@@ -54,11 +54,70 @@ class HikingApiTest extends TestCase
         $first = User::factory()->create();
         $second = User::factory()->create();
 
-        $this->actingAs($first, 'sanctum')->postJson("/api/events/{$event->id}/join")->assertOk()->assertJsonPath('participants_count', 1);
+        // Joining only ever creates a pending request — it doesn't fill a seat yet.
+        $this->actingAs($first, 'sanctum')->postJson("/api/events/{$event->id}/join")
+            ->assertOk()
+            ->assertJsonPath('participation_status', 'pending')
+            ->assertJsonPath('participants_count', 0);
+
+        // Requesting again while already pending is rejected.
         $this->actingAs($first, 'sanctum')->postJson("/api/events/{$event->id}/join")->assertUnprocessable();
+
+        // The organizer approves the request, which now fills the only seat.
+        $this->actingAs($organizer, 'sanctum')->putJson("/api/events/{$event->id}/attendance", [
+            'user_id' => $first->id,
+            'attendance_status' => 'joined',
+        ])->assertOk();
+
+        // A second explorer's request is rejected once the event is full of approved hikers.
         $this->actingAs($second, 'sanctum')->postJson("/api/events/{$event->id}/join")->assertUnprocessable();
 
-        $this->assertSame([$first->id], $event->participants()->pluck('users.id')->all());
+        $this->assertSame(
+            [$first->id],
+            $event->participants()->wherePivot('attendance_status', 'joined')->pluck('users.id')->all(),
+        );
+    }
+
+    public function test_organizer_can_approve_and_reject_join_requests(): void
+    {
+        $trail = Trail::create($this->trailData());
+        $organizer = User::factory()->create(['role' => 'organizer']);
+        $event = Event::create(array_merge($this->eventData($trail), ['organizer_id' => $organizer->id, 'participant_limit' => 5]));
+        $approved = User::factory()->create();
+        $declined = User::factory()->create();
+
+        $this->actingAs($approved, 'sanctum')->postJson("/api/events/{$event->id}/join")->assertOk();
+        $this->actingAs($declined, 'sanctum')->postJson("/api/events/{$event->id}/join")->assertOk();
+
+        $this->actingAs($organizer, 'sanctum')->getJson("/api/events/{$event->id}/participants")
+            ->assertOk()
+            ->assertJsonPath('0.pivot.attendance_status', 'pending')
+            ->assertJsonPath('1.pivot.attendance_status', 'pending');
+
+        $this->actingAs($organizer, 'sanctum')->putJson("/api/events/{$event->id}/attendance", [
+            'user_id' => $approved->id,
+            'attendance_status' => 'joined',
+        ])->assertOk();
+
+        $this->actingAs($organizer, 'sanctum')->putJson("/api/events/{$event->id}/attendance", [
+            'user_id' => $declined->id,
+            'attendance_status' => 'rejected',
+        ])->assertOk();
+
+        $this->actingAs($approved, 'sanctum')->getJson("/api/events/{$event->id}")
+            ->assertOk()
+            ->assertJsonPath('participation_status', 'joined')
+            ->assertJsonPath('is_joined', true);
+
+        $this->actingAs($declined, 'sanctum')->getJson("/api/events/{$event->id}")
+            ->assertOk()
+            ->assertJsonPath('participation_status', 'rejected')
+            ->assertJsonPath('is_joined', false);
+
+        // A declined explorer can send a new request.
+        $this->actingAs($declined, 'sanctum')->postJson("/api/events/{$event->id}/join")
+            ->assertOk()
+            ->assertJsonPath('participation_status', 'pending');
     }
 
     public function test_admin_approval_turns_explorer_into_organizer(): void

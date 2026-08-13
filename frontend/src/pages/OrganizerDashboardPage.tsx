@@ -146,16 +146,21 @@ export default function OrganizerDashboardPage() {
 
   const rows = useMemo(
     () =>
-      events.map((event) => ({
-        event,
-        row: [
-          event.title,
-          formatDate(event.starts_at),
-          event.status,
-          `${event.participants_count ?? 0} / ${event.participant_limit}`,
-          event.cover_image || '',
-        ],
-      })),
+      events.map((event) => {
+        const pending = event.pending_participants_count ?? 0
+        const capacity = `${event.participants_count ?? 0} / ${event.participant_limit}`
+
+        return {
+          event,
+          row: [
+            event.title,
+            formatDate(event.starts_at),
+            event.status,
+            pending ? `${capacity} · ${pending} pending` : capacity,
+            event.cover_image || '',
+          ],
+        }
+      }),
     [events],
   )
   const totalParticipants = events.reduce((sum, event) => sum + (event.participants_count ?? 0), 0)
@@ -256,37 +261,68 @@ export default function OrganizerDashboardPage() {
             <p className="table-empty">Loading participants...</p>
           ) : participants.length ? (
             <div className="data-table">
-              {participants.map((participant) => (
-                <div className="participant-row" key={participant.id}>
-                  <span>
-                    <strong>{participant.name}</strong>
-                  </span>
-                  <span>{participant.email}</span>
-                  <span className="organizer-row-actions">
-                    {ATTENDANCE_OPTIONS.map((option) => (
-                      <button
-                        className={
-                          `attendance-action ${option}${
-                            participant.pivot?.attendance_status === option ? ' active' : ''
-                          }`
-                        }
-                        key={option}
-                        type="button"
-                        onClick={() => void setAttendance(participant.id, option)}
-                        aria-label={`${attendanceOption(option).label} for ${participant.name}`}
-                        title={attendanceOption(option).label}
-                      >
-                        <span className="material-symbols-outlined" aria-hidden="true">
-                          {attendanceOption(option).icon}
-                        </span>
-                      </button>
-                    ))}
-                  </span>
-                </div>
-              ))}
+              {participants.map((participant) => {
+                const status = participant.pivot?.attendance_status
+                const needsDecision = status === 'pending' || status === 'rejected'
+
+                return (
+                  <div className="participant-row" key={participant.id}>
+                    <span>
+                      <strong>{participant.name}</strong>
+                    </span>
+                    <span>{participant.email}</span>
+                    <span className="organizer-row-actions">
+                      {status && <b className={`status ${status}`}>{status}</b>}
+                      {needsDecision ? (
+                        <>
+                          <button
+                            className="approval-action approve"
+                            type="button"
+                            onClick={() => void setAttendance(participant.id, 'joined')}
+                            aria-label={`Approve ${participant.name}`}
+                            title="Approve"
+                          >
+                            <span className="material-symbols-outlined" aria-hidden="true">
+                              check
+                            </span>
+                          </button>
+                          <button
+                            className="approval-action reject"
+                            type="button"
+                            onClick={() => void setAttendance(participant.id, 'rejected')}
+                            aria-label={`Reject ${participant.name}`}
+                            title="Reject"
+                          >
+                            <span className="material-symbols-outlined" aria-hidden="true">
+                              close
+                            </span>
+                          </button>
+                        </>
+                      ) : (
+                        ATTENDANCE_OPTIONS.map((option) => (
+                          <button
+                            className={`attendance-action ${option}${
+                              status === option ? ' active' : ''
+                            }`}
+                            key={option}
+                            type="button"
+                            onClick={() => void setAttendance(participant.id, option)}
+                            aria-label={`${attendanceOption(option).label} for ${participant.name}`}
+                            title={attendanceOption(option).label}
+                          >
+                            <span className="material-symbols-outlined" aria-hidden="true">
+                              {attendanceOption(option).icon}
+                            </span>
+                          </button>
+                        ))
+                      )}
+                    </span>
+                  </div>
+                )
+              })}
             </div>
           ) : (
-            <p className="table-empty">Nobody has joined this event yet.</p>
+            <p className="table-empty">Nobody has requested to join this event yet.</p>
           )}
           </section>
         </div>

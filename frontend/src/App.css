@@ -4829,6 +4829,21 @@ a.feed-time:hover {
   color: var(--burnt);
 }
 
+.status.joined {
+  background: #d1e7dd;
+  color: var(--forest);
+}
+
+.status.attended {
+  background: #228b4b;
+  color: white;
+}
+
+.status.missed {
+  background: #f8d7da;
+  color: var(--error);
+}
+
 .table-empty {
   color: var(--outline);
   font-family: var(--mono);
@@ -4931,6 +4946,7 @@ a.feed-time:hover {
 }
 
 .organizer-row-actions {
+  align-items: center;
   display: flex;
   gap: 8px;
   justify-content: flex-end;
@@ -4980,6 +4996,22 @@ a.feed-time:hover {
 }
 
 .participant-row .organizer-row-actions .attendance-action:hover {
+  filter: brightness(0.9);
+}
+
+.participant-row .organizer-row-actions .approval-action.approve {
+  background: #228b4b;
+  border-color: #228b4b;
+  color: white;
+}
+
+.participant-row .organizer-row-actions .approval-action.reject {
+  background: #c73a3a;
+  border-color: #c73a3a;
+  color: white;
+}
+
+.participant-row .organizer-row-actions .approval-action:hover {
   filter: brightness(0.9);
 }
 

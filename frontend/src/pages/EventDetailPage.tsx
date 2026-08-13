@@ -8,7 +8,7 @@ import { useAuth } from '../context/useAuth'
 import { useLocale } from '../context/useLocale'
 import { useToast } from '../context/useToast'
 import { IMG } from '../data/mockData'
-import type { ApiEvent } from '../types/api'
+import type { ApiEvent, AttendanceStatus } from '../types/api'
 import { ApiError, apiRequest } from '../utils/api'
 import { eventStatusTone, formatDate, formatDistance, formatTime } from '../utils/format'
 import { bgStyle } from '../utils/style'
@@ -67,24 +67,35 @@ export default function EventDetailPage() {
       return
     }
 
-    const leaving = Boolean(event.is_joined)
+    const previousStatus = event.participation_status ?? null
+    const isWithdrawing = previousStatus === 'pending' || previousStatus === 'joined'
     setIsJoining(true)
 
     try {
-      const response = await apiRequest<{ joined: boolean; participants_count: number }>(
-        `/api/events/${event.id}/join`,
-        { method: leaving ? 'DELETE' : 'POST', token: authToken },
-      )
+      const response = await apiRequest<{
+        participation_status: AttendanceStatus | null
+        participants_count: number
+      }>(`/api/events/${event.id}/join`, {
+        method: isWithdrawing ? 'DELETE' : 'POST',
+        token: authToken,
+      })
       setEvent({
         ...event,
-        is_joined: response.joined,
+        is_joined: response.participation_status === 'joined',
+        participation_status: response.participation_status,
         participants_count: response.participants_count,
       })
       showToast({
-        message: leaving
-          ? 'Your seat has been released for another hiker.'
-          : 'The organizer can now see you on the participant list.',
-        title: leaving ? 'You left this event' : 'You joined this event',
+        message: isWithdrawing
+          ? previousStatus === 'joined'
+            ? 'Your seat has been released for another hiker.'
+            : 'Your request has been withdrawn.'
+          : 'The organizer will review your request and approve or decline it soon.',
+        title: isWithdrawing
+          ? previousStatus === 'joined'
+            ? 'You left this event'
+            : 'Request withdrawn'
+          : 'Request sent',
         variant: 'success',
       })
     } catch (requestError) {
@@ -130,6 +141,17 @@ export default function EventDetailPage() {
   const slotsLeft = Math.max(event.participant_limit - joinedCount, 0)
   const isFull = slotsLeft === 0 && !event.is_joined
   const isClosed = event.status !== 'upcoming' && event.status !== 'featured'
+  const participationStatus = event.participation_status ?? null
+  const joinButtonLabel =
+    participationStatus === 'joined'
+      ? t('event.joined')
+      : participationStatus === 'pending'
+        ? t('event.pending')
+        : participationStatus === 'rejected'
+          ? t('event.rejected')
+          : isFull
+            ? 'Event full'
+            : t('event.join')
   const filledRatio = event.participant_limit
     ? Math.min(joinedCount / event.participant_limit, 1)
     : 0
@@ -261,13 +283,16 @@ export default function EventDetailPage() {
             )}
           </div>
           <button
-            className="button cta wide"
-            disabled={isJoining || isClosed || (isFull && !event.is_joined)}
+            className={`button wide ${participationStatus === 'pending' ? 'outline' : 'cta'}`}
+            disabled={isJoining || isClosed || (isFull && participationStatus === null)}
             type="button"
             onClick={toggleJoin}
           >
-            {event.is_joined ? t('event.joined') : isFull ? 'Event full' : t('event.join')}
+            {joinButtonLabel}
           </button>
+          {participationStatus === 'pending' && (
+            <p className="booking-note">The organizer hasn't reviewed your request yet.</p>
+          )}
           {isClosed && <p className="booking-note">This event no longer accepts new hikers.</p>}
         </aside>
       </section>

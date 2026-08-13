@@ -55,16 +55,23 @@ class ProfileController extends Controller
     private function profilePayload(User $user, bool $includeOwnerOnly = false)
     {
         $user->load('profile')
-            ->loadCount(['favorites', 'joinedEvents', 'posts']);
+            ->loadCount([
+                'favorites',
+                'joinedEvents' => fn ($q) => $q->where('event_participants.attendance_status', 'joined'),
+                'posts',
+            ]);
 
         $favorites = $user->favorites()
             ->latest('favorites.created_at')
             ->limit(6)
             ->get(['trails.id', 'name', 'difficulty', 'distance_km', 'elevation_m', 'cover_image']);
 
+        // Only approved events show up as "your treks" — pending requests stay on the event page
+        // until the organizer decides.
         $joinedEvents = $user->joinedEvents()
+            ->wherePivot('attendance_status', 'joined')
             ->with(['trail:id,name,difficulty'])
-            ->withCount('participants')
+            ->withCount(['participants' => fn ($q) => $q->where('event_participants.attendance_status', 'joined')])
             ->where('starts_at', '>=', now())
             ->orderBy('starts_at')
             ->limit(6)

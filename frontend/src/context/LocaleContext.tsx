@@ -253,8 +253,10 @@ const translations = {
   'event.overview': ['Trek Overview', 'ခရီးစဉ် အကျဉ်းချုပ်'],
   'event.equipment': ['Equipment List', 'ကိရိယာစာရင်း'],
   'event.meeting': ['Meeting Point', 'တွေ့ဆုံမည့်နေရာ'],
-  'event.join': ['Join Event', 'ခရီးစဉ်တွင် ပါဝင်ရန်'],
+  'event.join': ['Request to Join', 'ပါဝင်ရန် တောင်းဆိုသည်'],
   'event.joined': ['Joined', 'ပါဝင်ပြီး'],
+  'event.pending': ['Request sent — tap to cancel', 'တောင်းဆိုပြီး — ပယ်ဖျက်ရန် နှိပ်ပါ'],
+  'event.rejected': ['Request declined — tap to reapply', 'ငြင်းပယ်ခံရသည် — ပြန်လျှောက်ရန် နှိပ်ပါ'],
   'event.trail': ['Linked Trail', 'ဆက်စပ် လမ်းကြောင်း'],
   'event.viewTrail': ['View trail', 'လမ်းကြောင်း ကြည့်ရန်'],
   'event.noTrail': [
