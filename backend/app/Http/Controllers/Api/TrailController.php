@@ -36,7 +36,7 @@ class TrailController extends Controller
             $query->latest()->orderByDesc('id');
         }
 
-        return $query->paginate(12);
+        return $query->paginate(min(max((int) $request->query('per_page', 12), 1), 100));
     }
 
     public function show(Request $request, Trail $trail)

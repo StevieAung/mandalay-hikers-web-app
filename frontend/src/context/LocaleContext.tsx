@@ -28,6 +28,7 @@ const translations = {
   'auth.command': ['Command Login.', 'စီမံခန့်ခွဲရန် အကောင့်ဝင်ပါ။'],
   'auth.name': ['Full Name', 'အမည်အပြည့်အစုံ'],
   'auth.email': ['Email Address', 'အီးမေးလ်လိပ်စာ'],
+  'auth.phone': ['Phone Number', 'ဖုန်းနံပါတ်'],
   'auth.password': ['Password', 'စကားဝှက်'],
   'auth.forgot': ['Forgot?', 'မေ့နေပါသလား?'],
   'auth.create': ['Create Explorer Account', 'တောင်တက်သူအကောင့် ဖန်တီးရန်'],

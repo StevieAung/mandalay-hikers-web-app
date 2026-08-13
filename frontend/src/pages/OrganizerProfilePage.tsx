@@ -119,6 +119,16 @@ export default function OrganizerProfilePage() {
               {details?.location || 'Location not added'}
             </span>
             <span>
+              <i className="material-symbols-outlined" aria-hidden="true">
+                phone
+              </i>
+              {details?.phone ? (
+                <a href={`tel:${details.phone.replace(/[^+\d]/g, '')}`}>{details.phone}</a>
+              ) : (
+                'Phone not added'
+              )}
+            </span>
+            <span>
               <CalendarDate size={18} />
               {verifiedDate
                 ? `${t('profile.verifiedSince')} ${formatDate(verifiedDate)}`

@@ -127,7 +127,7 @@ class EventController extends Controller
         $required = $partial ? 'sometimes' : 'required';
 
         return $request->validate([
-            'trail_id' => ['nullable', 'exists:trails,id'],
+            'trail_id' => [$required, 'exists:trails,id'],
             'title' => [$required, 'string', 'max:255'],
             'destination' => [$required, 'string', 'max:255'],
             'meeting_point' => [$required, 'string', 'max:255'],

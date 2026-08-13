@@ -214,6 +214,7 @@ export function ProfileHeader({
             <label>
               <span>Name</span>
               <input
+                placeholder="e.g. Aung Kyaw"
                 value={form.name}
                 onChange={(event) => setForm({ ...form, name: event.target.value })}
               />
@@ -221,6 +222,7 @@ export function ProfileHeader({
             <label>
               <span>Location</span>
               <input
+                placeholder="e.g. Mandalay, Myanmar"
                 value={form.location}
                 onChange={(event) => setForm({ ...form, location: event.target.value })}
               />
@@ -228,6 +230,8 @@ export function ProfileHeader({
             <label>
               <span>Phone</span>
               <input
+                placeholder="e.g. +95 9 123 456 789"
+                type="tel"
                 value={form.phone}
                 onChange={(event) => setForm({ ...form, phone: event.target.value })}
               />
@@ -235,6 +239,7 @@ export function ProfileHeader({
             <label>
               <span>Bio</span>
               <textarea
+                placeholder="Tell the hiking community a little about yourself."
                 value={form.bio}
                 onChange={(event) => setForm({ ...form, bio: event.target.value })}
               />

@@ -93,6 +93,16 @@ export default function ExplorerProfilePage() {
               {details?.location || 'Location not added'}
             </span>
             <span>
+              <i className="material-symbols-outlined" aria-hidden="true">
+                phone
+              </i>
+              {details?.phone ? (
+                <a href={`tel:${details.phone.replace(/[^+\d]/g, '')}`}>{details.phone}</a>
+              ) : (
+                'Phone not added'
+              )}
+            </span>
+            <span>
               <User size={18} />
               {t('profile.communityExplorer')}
             </span>

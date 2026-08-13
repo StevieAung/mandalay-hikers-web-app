@@ -165,6 +165,7 @@ export default function EventDetailPage() {
       <section className="event-detail-layout">
         <div className="event-main">
           <h2 className="section-title">{t('event.overview')}</h2>
+          <h3 className="event-overview-heading">About this event</h3>
           <p className="detail-copy">{event.description}</p>
 
           <article className="event-block">
@@ -186,6 +187,29 @@ export default function EventDetailPage() {
                   <Stat label={t('detail.duration')} value={trail.duration || '—'} />
                   <Stat label={t('detail.bestSeason')} value={trail.best_season || '—'} />
                 </div>
+                <div className="event-organizer-context">
+                  <span className="event-organizer-label">{t('event.organizer')}</span>
+                  <div className="organizer-strip">
+                    <InitialAvatar name={event.organizer?.name || 'Organizer'} />
+                    {organizerPath ? (
+                      <Link to={organizerPath}>
+                        <strong>{event.organizer?.name}</strong>
+                        <span>View organizer profile</span>
+                      </Link>
+                    ) : (
+                      <span>
+                        <strong>Unassigned</strong>
+                        <span>No organizer assigned yet</span>
+                      </span>
+                    )}
+                    {event.organizer?.is_verified && (
+                      <p>
+                        <ShieldCheck size={20} weight="Filled" />
+                        {t('profile.verified')}
+                      </p>
+                    )}
+                  </div>
+                </div>
               </>
             ) : (
               <p className="event-block-empty">{t('event.noTrail')}</p>
@@ -197,32 +221,6 @@ export default function EventDetailPage() {
               <h3>{t('event.equipment')}</h3>
             </div>
             <Panel items={equipment.length ? equipment : [t('event.noEquipment')]} />
-          </article>
-
-          <article className="event-block">
-            <div className="event-block-head">
-              <h3>{t('event.organizer')}</h3>
-            </div>
-            <div className="organizer-strip">
-              <InitialAvatar name={event.organizer?.name || 'Organizer'} />
-              {organizerPath ? (
-                <Link to={organizerPath}>
-                  <strong>{event.organizer?.name}</strong>
-                  <span>View organizer profile</span>
-                </Link>
-              ) : (
-                <span>
-                  <strong>Unassigned</strong>
-                  <span>No organizer on this trek</span>
-                </span>
-              )}
-              {event.organizer?.is_verified && (
-                <p>
-                  <ShieldCheck size={20} weight="Filled" />
-                  {t('profile.verified')}
-                </p>
-              )}
-            </div>
           </article>
         </div>
         <aside className="join-panel">

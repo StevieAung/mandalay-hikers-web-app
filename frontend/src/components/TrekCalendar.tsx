@@ -9,11 +9,17 @@ const monthLabel = (year: number, month: number) =>
 
 type TrekCalendarProps = {
   events: ApiEvent[]
+  markedDaysLabel?: string
   onSelectDay: (day: string | null) => void
   selectedDay: string | null
 }
 
-export function TrekCalendar({ events, onSelectDay, selectedDay }: TrekCalendarProps) {
+export function TrekCalendar({
+  events,
+  markedDaysLabel = 'Marked days have a trek you joined.',
+  onSelectDay,
+  selectedDay,
+}: TrekCalendarProps) {
   const trekCountByDay = useMemo(() => {
     const counts = new Map<string, number>()
     events.forEach((event) => {
@@ -116,7 +122,7 @@ export function TrekCalendar({ events, onSelectDay, selectedDay }: TrekCalendarP
             Clear day filter
           </button>
         ) : (
-          'Marked days have a trek you joined.'
+          markedDaysLabel
         )}
       </p>
     </div>

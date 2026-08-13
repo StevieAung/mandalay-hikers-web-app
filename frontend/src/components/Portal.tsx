@@ -13,7 +13,10 @@ type SidebarRole = Exclude<UserRole, 'explorer'>
 export function Sidebar({ active, onNavigate }: { active: SidebarRole; onNavigate?: () => void }) {
   const { user } = useAuth()
   const navByRole = {
-    organizer: [['organizer', '/organizer-dashboard', 'event_note', 'Organizer']],
+    organizer: [
+      ['overview', '/organizer-dashboard', 'dashboard', 'Overview'],
+      ['create-event', '/organizer/events/new', 'add_circle', 'Create event'],
+    ],
     admin: [
       ['overview', '/admin', 'dashboard', 'Overview'],
       ['users', '/admin/users', 'group', 'Users'],
@@ -28,10 +31,10 @@ export function Sidebar({ active, onNavigate }: { active: SidebarRole; onNavigat
 
   return (
     <aside className="portal-sidebar">
-      {active === 'admin' ? (
+      {active === 'admin' || active === 'organizer' ? (
         <div className="sidebar-user admin-sidebar-user">
-          <span>{user?.name || 'Admin User'}</span>
-          <small>{user?.email || 'admin portal'}</small>
+          <span>{user?.name || (active === 'admin' ? 'Admin User' : 'Organizer')}</span>
+          <small>{user?.email || `${active} portal`}</small>
         </div>
       ) : (
         <div>
@@ -45,10 +48,7 @@ export function Sidebar({ active, onNavigate }: { active: SidebarRole; onNavigat
         {nav.map(([key, to, icon, label]) => (
           <NavLink
             className={({ isActive }) =>
-              [
-                isActive || (active !== 'admin' && active === key) ? 'active' : '',
-                active === 'admin' && key === 'reports' ? 'danger' : '',
-              ]
+              [isActive ? 'active' : '', active === 'admin' && key === 'reports' ? 'danger' : '']
                 .filter(Boolean)
                 .join(' ')
             }
@@ -62,12 +62,7 @@ export function Sidebar({ active, onNavigate }: { active: SidebarRole; onNavigat
           </NavLink>
         ))}
       </nav>
-      {active === 'organizer' && (
-        <Link className="button dark wide" to="/organizer/events/new">
-          New Trek
-        </Link>
-      )}
-      {active !== 'admin' && (
+      {active !== 'admin' && active !== 'organizer' && (
         <div className="sidebar-user">
           <InitialAvatar name={user?.name || active} />
           <span>{user?.name || 'Mandalay Hiker'}</span>
@@ -104,17 +99,17 @@ export function PortalShell({ active, children }: { active: UserRole; children: 
   return (
     <>
       <Header />
-      {active === 'admin' && (
+      {(active === 'admin' || active === 'organizer') && (
         <button className="admin-drawer-trigger" onClick={() => setDrawerOpen(true)} type="button">
           <span className="material-symbols-outlined">menu</span>
-          Admin Menu
+          {active === 'admin' ? 'Admin Menu' : 'Organizer Menu'}
         </button>
       )}
       <main className={active === 'explorer' ? 'portal-shell no-sidebar' : 'portal-shell'}>
         {active !== 'explorer' && <Sidebar active={active} />}
         <section className="portal-content">{children}</section>
       </main>
-      {active === 'admin' && drawerOpen && (
+      {(active === 'admin' || active === 'organizer') && drawerOpen && (
         <div className="admin-drawer-layer" role="presentation">
           <button
             aria-label="Close admin menu"

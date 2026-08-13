@@ -1,11 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import CalendarDate from 'reicon-react/icons/CalendarDate'
-import RouteTrack from 'reicon-react/icons/RouteTrack'
-import ShieldCheck from 'reicon-react/icons/ShieldCheck'
-import Users from 'reicon-react/icons/Users'
-import { Metric, OrganizerRow, PortalShell, UserCard } from '../components/Portal'
-import { ProfileHeader } from '../components/ProfileHeader'
+import { InitialAvatar, Metric, OrganizerRow, PortalShell } from '../components/Portal'
+import { TrekCalendar } from '../components/TrekCalendar'
 import { useAuth } from '../context/useAuth'
 import { useToast } from '../context/useToast'
 import type {
@@ -16,9 +12,16 @@ import type {
   ProfilePayload,
 } from '../types/api'
 import { ApiError, apiRequest } from '../utils/api'
-import { formatDate } from '../utils/format'
+import { formatDate, toDayKey } from '../utils/format'
 
 const ATTENDANCE_OPTIONS: AttendanceStatus[] = ['joined', 'attended', 'missed']
+
+const attendanceOption = (status: AttendanceStatus) =>
+  ({
+    attended: { icon: 'check', label: 'Mark attended' },
+    joined: { icon: 'schedule', label: 'Mark joined' },
+    missed: { icon: 'close', label: 'Mark missed' },
+  })[status]
 
 export default function OrganizerDashboardPage() {
   const { authToken, user } = useAuth()
@@ -30,6 +33,7 @@ export default function OrganizerDashboardPage() {
   const [managed, setManaged] = useState<ApiEvent | null>(null)
   const [participants, setParticipants] = useState<ApiEventParticipant[]>([])
   const [isPanelLoading, setIsPanelLoading] = useState(false)
+  const [selectedCalendarDay, setSelectedCalendarDay] = useState<string | null>(null)
 
   const [reloadToken, setReloadToken] = useState(0)
 
@@ -61,6 +65,7 @@ export default function OrganizerDashboardPage() {
 
   const openParticipants = async (event: ApiEvent) => {
     setManaged(event)
+    setSelectedCalendarDay(toDayKey(event.starts_at))
     setIsPanelLoading(true)
 
     try {
@@ -158,74 +163,88 @@ export default function OrganizerDashboardPage() {
 
   return (
     <PortalShell active="organizer">
-      {profile && (
-        <ProfileHeader
-          badge={
-            <span className="badge dark-badge">
-              <ShieldCheck size={16} weight="Filled" />
-              Verified organizer
-            </span>
-          }
-          isOwner
-          onProfileSaved={setProfile}
-          profile={profile}
-          stats={[
-            {
-              icon: <CalendarDate size={22} weight="Filled" />,
-              label: 'Hosted events',
-              value: String(events.length),
-            },
-            {
-              icon: <Users size={22} weight="Filled" />,
-              label: 'Participants',
-              value: String(totalParticipants),
-            },
-            {
-              icon: <RouteTrack size={22} weight="Filled" />,
-              label: 'Role',
-              value: profile.user.role,
-            },
-          ]}
-        />
-      )}
-      <div className="portal-title-row">
+      <div className="admin-compact-head">
         <div>
-          <span className="label orange-text">Organizer Dashboard</span>
-          <h1>{user?.name || 'Managed Events'}</h1>
+          <h1>Overview</h1>
         </div>
-        <UserCard meta={user?.email || 'Organizer account'} name={user?.role || 'organizer'} />
-        <Link className="button brown" to="/organizer/events/new">
-          <span className="material-symbols-outlined">add_circle</span>Create New Event
-        </Link>
+        <div className="system-status compact">
+          Organizer <strong>Verified</strong>
+          <span />
+        </div>
       </div>
-      <div className="data-table">
-        <div className="table-head">
-          <span>Event Name</span>
-          <span>Date</span>
-          <span>Status</span>
-          <span>Participants</span>
-          <span>Actions</span>
-        </div>
-        {isLoading ? (
-          <p className="table-empty">Loading your events...</p>
-        ) : error ? (
-          <p className="table-empty danger">{error}</p>
-        ) : rows.length ? (
-          rows.map(({ event, row }) => (
-            <OrganizerRow
-              key={event.id}
-              onCancel={() => void cancelEvent(event)}
-              onManage={() => void openParticipants(event)}
-              row={row}
-            />
-          ))
+      <section className="organizer-account-card">
+        {profile?.user.profile?.avatar ? (
+          <img
+            className="dashboard-profile-avatar"
+            src={profile.user.profile.avatar}
+            alt={profile.user.name}
+          />
         ) : (
-          <p className="table-empty">No events created for this organizer account yet.</p>
+          <InitialAvatar name={profile?.user.name || user?.name || 'Organizer'} />
         )}
+        <div>
+          <span className="label orange-text">Organizer account</span>
+          <h2>{profile?.user.name || user?.name || 'Mandalay Organizer'}</h2>
+          <p>{profile?.user.profile?.bio || 'Create and manage safe local hiking events.'}</p>
+        </div>
+        <Link className="button outline" to={`/organizers/${profile?.user.id || user?.id}`}>
+          View profile
+        </Link>
+      </section>
+      <div className="portal-stats three admin-kpis organizer-kpis">
+        <Metric title="My events" value={String(events.length)} icon="event_note" />
+        <Metric title="Joined hikers" value={String(totalParticipants)} icon="groups" />
+        <Metric title="Upcoming" value={String(upcomingEvents.length)} icon="route" accent />
       </div>
+      <section className="admin-table-card organizer-events-card">
+        <div className="admin-panel-head organizer-table-head">
+          <h2>My events</h2>
+          <Link className="button cta" to="/organizer/events/new">
+            <span className="material-symbols-outlined">add_circle</span>Create event
+          </Link>
+        </div>
+        <div className="data-table organizer-data-table">
+          <div className="table-head">
+            <span>Event Name</span>
+            <span>Date</span>
+            <span>Status</span>
+            <span>Participants</span>
+            <span>Actions</span>
+          </div>
+          {isLoading ? (
+            <p className="table-empty">Loading your events...</p>
+          ) : error ? (
+            <p className="table-empty danger">{error}</p>
+          ) : rows.length ? (
+            rows.map(({ event, row }) => (
+              <OrganizerRow
+                key={event.id}
+                onCancel={() => void cancelEvent(event)}
+                onManage={() => void openParticipants(event)}
+                row={row}
+              />
+            ))
+          ) : (
+            <p className="table-empty">No events created for this organizer account yet.</p>
+          )}
+        </div>
+      </section>
       {managed && (
-        <section className="portal-section">
-          <div className="portal-section-head">
+        <div className="organizer-participants-layout">
+          <aside className="organizer-event-calendar" aria-label="Event calendar">
+            <TrekCalendar
+              events={events}
+              markedDaysLabel="Marked days have an event you host."
+              onSelectDay={(day) => {
+                setSelectedCalendarDay(day)
+                const event = day ? events.find((item) => toDayKey(item.starts_at) === day) : undefined
+                if (event && event.id !== managed.id) void openParticipants(event)
+              }}
+              selectedDay={selectedCalendarDay}
+            />
+          </aside>
+          <section className="admin-table-card organizer-participants-card">
+          <div className="admin-panel-head organizer-table-head">
             <h2>
               Participants <span>{managed.title}</span>
             </h2>
@@ -247,13 +266,19 @@ export default function OrganizerDashboardPage() {
                     {ATTENDANCE_OPTIONS.map((option) => (
                       <button
                         className={
-                          participant.pivot?.attendance_status === option ? 'active' : undefined
+                          `attendance-action ${option}${
+                            participant.pivot?.attendance_status === option ? ' active' : ''
+                          }`
                         }
                         key={option}
                         type="button"
                         onClick={() => void setAttendance(participant.id, option)}
+                        aria-label={`${attendanceOption(option).label} for ${participant.name}`}
+                        title={attendanceOption(option).label}
                       >
-                        {option}
+                        <span className="material-symbols-outlined" aria-hidden="true">
+                          {attendanceOption(option).icon}
+                        </span>
                       </button>
                     ))}
                   </span>
@@ -263,13 +288,9 @@ export default function OrganizerDashboardPage() {
           ) : (
             <p className="table-empty">Nobody has joined this event yet.</p>
           )}
-        </section>
+          </section>
+        </div>
       )}
-      <div className="portal-stats three">
-        <Metric title="My Events" value={String(events.length)} icon="event_note" />
-        <Metric title="Joined Hikers" value={String(totalParticipants)} icon="groups" />
-        <Metric title="Upcoming" value={String(upcomingEvents.length)} icon="route" accent />
-      </div>
     </PortalShell>
   )
 }

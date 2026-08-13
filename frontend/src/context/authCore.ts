@@ -6,6 +6,7 @@ export type RegisterInput = {
   email: string
   password: string
   password_confirmation: string
+  phone?: string
 }
 
 export type AuthContextValue = {

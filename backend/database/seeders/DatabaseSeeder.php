@@ -42,8 +42,18 @@ class DatabaseSeeder extends Seeder
             'role' => 'explorer',
         ]);
 
+        $phoneByUserId = [
+            $admin->id => '+95 9 111 222 333',
+            $verifiedOrganizer->id => '+95 9 222 333 444',
+            $explorer->id => '+95 9 333 444 555',
+        ];
+
         foreach ([$admin, $verifiedOrganizer, $explorer] as $user) {
-            $user->profile()->create(['location' => 'Mandalay', 'bio' => 'Weekend hiker exploring Mandalay region trails.']);
+            $user->profile()->create([
+                'location' => 'Mandalay',
+                'bio' => 'Weekend hiker exploring Mandalay region trails.',
+                'phone' => $phoneByUserId[$user->id],
+            ]);
         }
 
         OrganizerApplication::create([

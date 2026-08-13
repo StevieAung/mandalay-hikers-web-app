@@ -1,10 +1,12 @@
 
+import landingHero from '../assets/landing-hero.webp'
+
 const localImageBase = `${(import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000').replace(/\/+$/, '')}/storage/trails/mock`
 
 const localImage = (name: string) => `${localImageBase}/${name}.jpg`
 
 export const IMG = {
-  hero: localImage('hero'),
+  hero: landingHero,
   mandalayRidge: localImage('mandalayRidge'),
   deeDoke: localImage('deeDoke'),
   boots: localImage('boots'),
@@ -28,4 +30,3 @@ export const IMG = {
   avatar: localImage('avatar'),
   guide: localImage('guide'),
 }
-

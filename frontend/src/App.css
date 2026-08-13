@@ -1767,6 +1767,13 @@ textarea {
   margin: 0 0 40px;
 }
 
+.event-overview-heading {
+  color: var(--forest);
+  font-family: var(--display);
+  font-size: 24px;
+  margin: 0 0 10px;
+}
+
 .event-block {
   background: var(--surface);
   border: 1px solid var(--fog);
@@ -1816,6 +1823,22 @@ textarea {
   display: grid;
   gap: 24px;
   grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
+}
+
+.event-organizer-context {
+  border-top: 1px solid var(--fog);
+  margin-top: 26px;
+  padding-top: 20px;
+}
+
+.event-organizer-label {
+  color: var(--outline);
+  display: block;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  margin-bottom: 14px;
+  text-transform: uppercase;
 }
 
 .organizer-strip {
@@ -2781,7 +2804,7 @@ a.feed-time:hover {
   box-shadow: 0 24px 50px rgba(5, 10, 8, 0.14);
   display: grid;
   gap: 24px;
-  grid-template-columns: minmax(280px, 1.1fr) minmax(360px, 1.3fr) auto;
+  grid-template-columns: minmax(420px, 1fr) minmax(420px, 1.2fr) auto;
   margin: 0 auto;
   max-width: 1240px;
   padding: 0 22px 22px;
@@ -2793,16 +2816,18 @@ a.feed-time:hover {
   align-items: end;
   display: flex;
   gap: 22px;
+  min-width: 0;
 }
 
 .facebook-avatar-wrap {
+  flex: 0 0 154px;
   margin-top: -74px;
   position: relative;
 }
 
 .facebook-avatar-wrap img,
 .facebook-avatar-wrap .initial-avatar {
-  border: 5px solid var(--surface);
+  border: 5px solid #228b4b;
   border-radius: 50%;
   font-size: 44px;
   height: 154px;
@@ -2822,15 +2847,17 @@ a.feed-time:hover {
 }
 
 .facebook-profile-name {
+  min-width: 0;
   padding-top: 20px;
 }
 
 .facebook-profile-name h1 {
   color: var(--forest);
   font-family: var(--display);
-  font-size: clamp(36px, 5vw, 62px);
-  line-height: 0.95;
+  font-size: clamp(30px, 3vw, 44px);
+  line-height: 1;
   margin: 12px 0 8px;
+  overflow-wrap: anywhere;
 }
 
 .facebook-profile-name p {
@@ -2839,6 +2866,7 @@ a.feed-time:hover {
   font-size: 12px;
   letter-spacing: 0.12em;
   margin: 0;
+  overflow-wrap: anywhere;
   text-transform: uppercase;
 }
 
@@ -2855,6 +2883,7 @@ a.feed-time:hover {
   display: grid;
   gap: 8px;
   min-height: 118px;
+  min-width: 0;
   padding: 20px;
 }
 
@@ -2874,9 +2903,10 @@ a.feed-time:hover {
 .profile-banner-stat strong {
   color: var(--forest);
   font-family: var(--display);
-  font-size: clamp(28px, 3vw, 42px);
+  font-size: clamp(22px, 2.2vw, 32px);
   font-weight: 300;
   line-height: 1;
+  overflow-wrap: anywhere;
   text-transform: capitalize;
 }
 
@@ -2908,6 +2938,35 @@ a.feed-time:hover {
   overflow: auto;
   padding: 28px;
   width: min(560px, 100%);
+}
+
+.post-detail-modal {
+  max-width: 680px;
+}
+
+.post-detail-meta {
+  color: var(--outline);
+  display: flex;
+  flex-wrap: wrap;
+  font-family: var(--mono);
+  font-size: 11px;
+  gap: 8px 16px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.post-detail-image {
+  max-height: 360px;
+  object-fit: cover;
+  width: 100%;
+}
+
+.post-detail-body {
+  color: var(--stone);
+  line-height: 1.7;
+  margin: 0;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
 }
 
 .profile-edit-head {
@@ -3270,6 +3329,12 @@ a.feed-time:hover {
   text-transform: uppercase;
 }
 
+.profile-meta a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 .profile-main {
   display: grid;
   gap: 24px;
@@ -3623,6 +3688,93 @@ a.feed-time:hover {
 .admin-kpis .portal-metric strong {
   font-size: 32px;
   margin-top: 6px;
+}
+
+.organizer-kpis {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-bottom: 16px;
+}
+
+.organizer-account-card {
+  align-items: center;
+  background: var(--surface);
+  border: 1px solid var(--fog);
+  display: grid;
+  gap: 16px;
+  grid-template-columns: 52px minmax(0, 1fr) auto;
+  margin-bottom: 16px;
+  padding: 18px;
+}
+
+.organizer-account-card .dashboard-profile-avatar,
+.organizer-account-card .initial-avatar {
+  border: 3px solid #228b4b;
+  border-radius: 50%;
+  height: 52px;
+  object-fit: cover;
+  width: 52px;
+}
+
+.organizer-account-card h2 {
+  color: var(--forest);
+  font-family: var(--display);
+  font-size: 28px;
+  margin: 4px 0;
+}
+
+.organizer-account-card p,
+.organizer-form-intro p {
+  color: var(--stone);
+  margin: 0;
+}
+
+.organizer-events-card,
+.organizer-participants-card {
+  margin-top: 16px;
+}
+
+.organizer-participants-layout {
+  align-items: start;
+  display: grid;
+  gap: 16px;
+  grid-template-columns: minmax(280px, 330px) minmax(0, 1fr);
+  margin-top: 16px;
+}
+
+.organizer-participants-layout .organizer-participants-card {
+  margin-top: 0;
+}
+
+.organizer-event-calendar .trek-calendar {
+  position: static;
+}
+
+.organizer-table-head {
+  border-bottom: 1px solid var(--fog);
+  padding: 18px 20px;
+}
+
+.organizer-table-head h2 {
+  color: var(--forest);
+  font-family: var(--display);
+  font-size: 26px;
+  margin: 0;
+}
+
+.organizer-data-table {
+  margin-bottom: 0;
+}
+
+.organizer-event-form {
+  display: grid;
+  gap: 18px;
+  max-width: 920px;
+  padding: 24px;
+}
+
+.organizer-form-intro {
+  border-bottom: 1px solid var(--fog);
+  padding-bottom: 18px;
 }
 
 .admin-overview-grid {
@@ -4066,6 +4218,72 @@ a.feed-time:hover {
   margin: 0 0 24px;
 }
 
+.application-status-card {
+  margin-bottom: 24px;
+}
+
+.application-status-head {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.application-status-head .label {
+  margin: 0;
+}
+
+.application-status-reason {
+  color: #cbead7;
+  font-family: var(--display);
+  font-size: 22px;
+  font-style: italic;
+  font-weight: 300;
+  line-height: 1.4;
+  margin: 0 0 20px;
+}
+
+.application-status-meta {
+  color: #cbead7;
+  display: flex;
+  font-family: var(--mono);
+  font-size: 11px;
+  gap: 20px;
+  letter-spacing: 0.08em;
+  opacity: 0.75;
+  text-transform: uppercase;
+}
+
+.application-review-note {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  margin-top: 20px;
+  padding: 18px 20px;
+}
+
+.application-review-note strong {
+  color: var(--orange);
+  display: block;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.application-review-note p {
+  color: #cbead7;
+  margin: 0;
+}
+
+.application-status-card .button {
+  margin-top: 24px;
+}
+
+.reapply-form {
+  margin-top: 8px;
+}
+
 .portal-section {
   margin-top: 30px;
 }
@@ -4248,7 +4466,7 @@ a.feed-time:hover {
 
 .date-card strong {
   font-family: var(--display);
-  font-size: 42px;
+  font-size: 32px;
   font-weight: 300;
 }
 
@@ -4731,22 +4949,47 @@ a.feed-time:hover {
 }
 
 .participant-row .organizer-row-actions button {
+  align-items: center;
   border: 1px solid var(--fog);
   cursor: pointer;
+  display: inline-flex;
   font-family: var(--mono);
-  font-size: 11px;
-  letter-spacing: 0.12em;
-  padding: 8px 12px;
-  text-transform: uppercase;
+  height: 36px;
+  justify-content: center;
+  padding: 0;
+  width: 36px;
 }
 
-.participant-row .organizer-row-actions button.active {
-  background: var(--burnt);
-  border-color: var(--burnt);
+.participant-row .organizer-row-actions .attendance-action.attended {
+  background: #228b4b;
+  border-color: #228b4b;
   color: white;
 }
 
+.participant-row .organizer-row-actions .attendance-action.missed {
+  background: #c73a3a;
+  border-color: #c73a3a;
+  color: white;
+}
+
+.participant-row .organizer-row-actions .attendance-action.joined {
+  background: var(--surface-low);
+  color: var(--outline);
+}
+
+.participant-row .organizer-row-actions .attendance-action.active {
+  box-shadow: 0 0 0 2px var(--forest);
+}
+
+.participant-row .organizer-row-actions .attendance-action:hover {
+  filter: brightness(0.9);
+}
+
 @media (max-width: 1050px) {
+  .organizer-participants-layout {
+    grid-template-columns: 1fr;
+  }
+
   .backend-warning {
     grid-template-columns: auto 1fr;
     top: 88px;
@@ -4777,6 +5020,7 @@ a.feed-time:hover {
   }
 
   .facebook-avatar-wrap {
+    flex-basis: 118px;
     margin-top: -56px;
   }
 

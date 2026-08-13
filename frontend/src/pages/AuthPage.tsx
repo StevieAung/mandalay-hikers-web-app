@@ -42,7 +42,8 @@ export default function AuthPage({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [form, setForm] = useState({
     name: '',
-    email: defaultEmail,
+    email: isRegister ? '' : defaultEmail,
+    phone: '',
     password: '',
     passwordConfirmation: '',
   })
@@ -72,6 +73,7 @@ export default function AuthPage({
         const role = await register({
           name: form.name,
           email: form.email,
+          phone: form.phone.trim() || undefined,
           password: form.password,
           password_confirmation: form.passwordConfirmation,
         })
@@ -132,6 +134,15 @@ export default function AuthPage({
             value={form.email}
             onChange={(value) => setForm({ ...form, email: value })}
           />
+          {isRegister && (
+            <Field
+              label={t('auth.phone')}
+              type="tel"
+              placeholder="+95 9xxxxxxxx"
+              value={form.phone}
+              onChange={(value) => setForm({ ...form, phone: value })}
+            />
+          )}
           <Field
             label={t('auth.password')}
             type="password"

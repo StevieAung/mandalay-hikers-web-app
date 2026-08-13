@@ -1,13 +1,47 @@
 import { useEffect, useState } from 'react'
+import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
+import { DividerTitle } from '../components/Cards'
 import { Field } from '../components/FormField'
 import { PortalShell } from '../components/Portal'
 import { useAuth } from '../context/useAuth'
 import { useToast } from '../context/useToast'
 import type { ApiOrganizerApplication, ProfilePayload } from '../types/api'
 import { ApiError, apiRequest } from '../utils/api'
+import { formatDate } from '../utils/format'
 
 const MIN_REASON_LENGTH = 20
+
+function ApplicationStatusCard({
+  application,
+  children,
+}: {
+  application: ApiOrganizerApplication
+  children?: ReactNode
+}) {
+  return (
+    <article className="dark-callout application-status-card">
+      <div className="application-status-head">
+        <span className="label orange-text">Your Application</span>
+        <span className={`status ${application.status}`}>{application.status}</span>
+      </div>
+      {application.reason && (
+        <p className="application-status-reason">&ldquo;{application.reason}&rdquo;</p>
+      )}
+      <div className="application-status-meta">
+        {application.created_at && <span>Submitted {formatDate(application.created_at)}</span>}
+        {application.reviewed_at && <span>Reviewed {formatDate(application.reviewed_at)}</span>}
+      </div>
+      {application.review_note && (
+        <div className="application-review-note">
+          <strong>Reviewer note</strong>
+          <p>{application.review_note}</p>
+        </div>
+      )}
+      {children}
+    </article>
+  )
+}
 
 export default function OrganizerApplicationPage() {
   const { authToken, user } = useAuth()
@@ -97,37 +131,32 @@ export default function OrganizerApplicationPage() {
         </article>
       ) : isLoading ? (
         <p className="table-empty">Checking your application status...</p>
-      ) : pendingOrApproved ? (
-        <article className="dark-callout">
-          <h2>Application {application?.status}</h2>
-          <p>{application?.reason}</p>
-          {application?.review_note && <p>Reviewer note: {application.review_note}</p>}
+      ) : pendingOrApproved && application ? (
+        <ApplicationStatusCard application={application}>
           <Link className="button cta" to="/explorer-dashboard">
             Back to Explorer Dashboard
           </Link>
-        </article>
+        </ApplicationStatusCard>
       ) : (
-        <form className="create-form" onSubmit={submit}>
-          {application?.status === 'rejected' && (
-            <article className="dark-callout">
-              <h2>Your last application was rejected</h2>
-              <p>{application.review_note || 'You can submit an updated application below.'}</p>
-            </article>
-          )}
-          <Field label="Applicant" readOnly value={user?.name || ''} onChange={() => null} />
-          <label className="form-field">
-            <span>Why do you want to organize hikes?</span>
-            <textarea
-              value={reason}
-              onChange={(event) => setReason(event.target.value)}
-              placeholder="Share your hiking experience, safety approach, and the kinds of Mandalay events you want to lead."
-            />
-          </label>
-          {formError && <p className="table-empty danger">{formError}</p>}
-          <button className="button cta" disabled={isSubmitting} type="submit">
-            {isSubmitting ? 'Submitting...' : 'Submit Application'}
-          </button>
-        </form>
+        <>
+          {application?.status === 'rejected' && <ApplicationStatusCard application={application} />}
+          <form className="create-form reapply-form" onSubmit={submit}>
+            {application?.status === 'rejected' && <DividerTitle title="Submit a new application" />}
+            <Field label="Applicant" readOnly value={user?.name || ''} onChange={() => null} />
+            <label className="form-field">
+              <span>Why do you want to organize hikes?</span>
+              <textarea
+                value={reason}
+                onChange={(event) => setReason(event.target.value)}
+                placeholder="Share your hiking experience, safety approach, and the kinds of Mandalay events you want to lead."
+              />
+            </label>
+            {formError && <p className="table-empty danger">{formError}</p>}
+            <button className="button cta" disabled={isSubmitting} type="submit">
+              {isSubmitting ? 'Submitting...' : 'Submit Application'}
+            </button>
+          </form>
+        </>
       )}
     </PortalShell>
   )

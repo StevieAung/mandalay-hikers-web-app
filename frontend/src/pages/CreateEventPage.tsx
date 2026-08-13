@@ -26,16 +26,19 @@ export default function CreateEventPage() {
   const [form, setForm] = useState(emptyForm)
   const [coverImage, setCoverImage] = useState<File | null>(null)
   const [trails, setTrails] = useState<ApiTrail[]>([])
+  const [isLoadingTrails, setIsLoadingTrails] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     const loadTrails = async () => {
       try {
-        const response = await apiRequest<PaginatedResponse<ApiTrail>>('/api/trails')
+        const response = await apiRequest<PaginatedResponse<ApiTrail>>('/api/trails?per_page=100')
         setTrails(response.data)
       } catch {
         setTrails([])
+      } finally {
+        setIsLoadingTrails(false)
       }
     }
 
@@ -45,8 +48,22 @@ export default function CreateEventPage() {
   const setValue = (key: keyof typeof emptyForm) => (value: string) =>
     setForm((current) => ({ ...current, [key]: value }))
 
+  const selectTrail = (trailId: string) => {
+    const trail = trails.find((item) => String(item.id) === trailId)
+    setForm((current) => ({
+      ...current,
+      destination: trail?.location || '',
+      trail_id: trailId,
+    }))
+  }
+
   const submit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
+
+    if (!form.trail_id) {
+      setError('Choose a trail from the database before creating this event.')
+      return
+    }
 
     if (!form.date || !form.time) {
       setError('Pick both a date and a start time for the event.')
@@ -65,7 +82,7 @@ export default function CreateEventPage() {
     payload.append('description', form.description)
 
     if (form.required_equipment) payload.append('required_equipment', form.required_equipment)
-    if (form.trail_id) payload.append('trail_id', form.trail_id)
+    payload.append('trail_id', form.trail_id)
     if (coverImage) payload.append('cover_image', coverImage)
 
     try {
@@ -92,13 +109,23 @@ export default function CreateEventPage() {
 
   return (
     <PortalShell active="organizer">
-      <div className="portal-title-row">
+      <div className="admin-compact-head">
         <div>
-          <span className="label orange-text">Organizer</span>
           <h1>Create New Event</h1>
         </div>
+        <button
+          className="button outline"
+          onClick={() => navigate('/organizer-dashboard')}
+          type="button"
+        >
+          Back to overview
+        </button>
       </div>
-      <form className="create-form" onSubmit={submit}>
+      <form className="create-form organizer-event-form admin-table-card" onSubmit={submit}>
+        <div className="organizer-form-intro">
+          <span className="label orange-text">Event details</span>
+          <p>Set the route, meeting details, capacity, and safety information for your hikers.</p>
+        </div>
         <Field
           label="Event Name"
           required
@@ -106,12 +133,31 @@ export default function CreateEventPage() {
           onChange={setValue('title')}
           placeholder="Dawn over Yankin Hill"
         />
+        <label className="form-field">
+          <span>Trail</span>
+          <select
+            disabled={isLoadingTrails || !trails.length}
+            required
+            value={form.trail_id}
+            onChange={(event) => selectTrail(event.target.value)}
+          >
+            <option value="">
+              {isLoadingTrails ? 'Loading trails...' : trails.length ? 'Select a trail' : 'No trails available'}
+            </option>
+            {trails.map((trail) => (
+              <option key={trail.id} value={trail.id}>
+                {trail.name} — {trail.location}
+              </option>
+            ))}
+          </select>
+        </label>
         <Field
           label="Destination"
           required
+          readOnly
           value={form.destination}
           onChange={setValue('destination')}
-          placeholder="Yankin Hill Ridge"
+          placeholder="Select a trail to set the destination"
         />
         <Field
           label="Meeting Point"
@@ -121,20 +167,8 @@ export default function CreateEventPage() {
           placeholder="South entrance pagoda"
         />
         <div className="form-grid">
-          <Field
-            label="Date"
-            type="date"
-            required
-            value={form.date}
-            onChange={setValue('date')}
-          />
-          <Field
-            label="Time"
-            type="time"
-            required
-            value={form.time}
-            onChange={setValue('time')}
-          />
+          <Field label="Date" type="date" required value={form.date} onChange={setValue('date')} />
+          <Field label="Time" type="time" required value={form.time} onChange={setValue('time')} />
         </div>
         <div className="form-grid">
           <Field
@@ -145,20 +179,6 @@ export default function CreateEventPage() {
             value={form.participant_limit}
             onChange={setValue('participant_limit')}
           />
-          <label className="form-field">
-            <span>Trail (optional)</span>
-            <select
-              value={form.trail_id}
-              onChange={(event) => setValue('trail_id')(event.target.value)}
-            >
-              <option value="">No linked trail</option>
-              {trails.map((trail) => (
-                <option key={trail.id} value={trail.id}>
-                  {trail.name}
-                </option>
-              ))}
-            </select>
-          </label>
         </div>
         <label className="form-field">
           <span>Required Equipment</span>

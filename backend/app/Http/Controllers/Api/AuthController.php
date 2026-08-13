@@ -16,10 +16,11 @@ class AuthController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'phone' => ['nullable', 'string', 'max:60'],
         ]);
 
         $user = User::create($data);
-        $user->profile()->create();
+        $user->profile()->create(['phone' => $data['phone'] ?? null]);
         $user = $user->fresh()->load('profile');
 
         return response()->json([

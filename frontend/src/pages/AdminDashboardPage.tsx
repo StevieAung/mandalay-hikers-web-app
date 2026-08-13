@@ -161,6 +161,7 @@ export default function AdminDashboardPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [errorState, setErrorState] = useState<{ key: string; message: string } | null>(null)
   const [trailModal, setTrailModal] = useState<TrailModal | null>(null)
+  const [postModal, setPostModal] = useState<ApiPost | null>(null)
 
   const query = useMemo(() => Object.fromEntries(searchParams.entries()), [searchParams])
   const requestKey = useMemo(
@@ -616,6 +617,35 @@ export default function AdminDashboardPage() {
           </form>
         </div>
       )}
+      {postModal && (
+        <div className="profile-modal-backdrop" role="presentation" onMouseDown={() => setPostModal(null)}>
+          <article
+            aria-label="Post details"
+            className="profile-edit-modal post-detail-modal"
+            onMouseDown={(event) => event.stopPropagation()}
+          >
+            <div className="profile-edit-head">
+              <div>
+                <span className="label orange-text">Community post</span>
+                <h2>{postModal.title}</h2>
+              </div>
+              <button aria-label="Close post details" onClick={() => setPostModal(null)} type="button">
+                <span className="material-symbols-outlined">close</span>
+              </button>
+            </div>
+            <div className="post-detail-meta">
+              <span>{postModal.user?.name || 'Unknown author'}</span>
+              <span>{postModal.user?.email}</span>
+              <span>{formatDate(postModal.created_at)}</span>
+              <span>{postModal.comments_count ?? 0} comments</span>
+            </div>
+            {postModal.image && (
+              <img className="post-detail-image" src={postModal.image} alt={postModal.title} />
+            )}
+            <p className="post-detail-body">{postModal.body}</p>
+          </article>
+        </div>
+      )}
     </PortalShell>
   )
 
@@ -866,7 +896,7 @@ export default function AdminDashboardPage() {
     return (
       <AdminTable headers={['Author', 'Post', 'Comments', 'Date', 'Actions']}>
         {posts.map((row) => (
-          <tr key={row.id}>
+          <tr className="clickable-row" key={row.id} onClick={() => setPostModal(row)}>
             <td>
               <strong>{row.user?.name}</strong>
               <small>{row.user?.email}</small>
@@ -879,15 +909,25 @@ export default function AdminDashboardPage() {
             <td>{formatDate(row.created_at)}</td>
             <td className="row-actions">
               <button
-                onClick={() =>
-                  window.confirm('Delete this community post?') &&
+                onClick={(event) => {
+                  event.stopPropagation()
+                  setPostModal(row)
+                }}
+                type="button"
+              >
+                Inspect
+              </button>
+              <button
+                onClick={(event) => {
+                  event.stopPropagation()
+                  if (!window.confirm('Delete this community post?')) return
                   void mutate('Post deleted.', () =>
                     apiRequest(`/api/admin/posts/${row.id}`, {
                       method: 'DELETE',
                       token: authToken,
                     }),
                   )
-                }
+                }}
                 type="button"
               >
                 Delete
