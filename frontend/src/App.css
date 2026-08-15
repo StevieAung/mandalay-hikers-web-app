@@ -323,6 +323,12 @@ html[lang='my'] :is(p, span, a, button, input, textarea, select, label) {
   text-transform: uppercase;
 }
 
+/* Buttons carry compact monospace labels. Keep each label intact and let the
+   surrounding responsive layout decide when an action needs its own line. */
+.button {
+  white-space: nowrap;
+}
+
 .button.dark {
   background: var(--forest);
   color: white;
@@ -5448,6 +5454,464 @@ a.feed-time:hover {
   .review-modal-actions .button,
   .review-delete {
     margin: 0;
+    width: 100%;
+  }
+}
+
+/* Responsive repair layer ------------------------------------------------- */
+
+/* Flex and grid items otherwise preserve their intrinsic width, which can make
+   a long email address or a pair of actions wider than its mobile container. */
+.site-header > *,
+.detail-hero > *,
+.event-detail-hero > *,
+.detail-content > *,
+.event-detail-layout > *,
+.events-head > *,
+.facebook-profile-bar > *,
+.facebook-identity-row > *,
+.profile-banner-stats > *,
+.portal-content > *,
+.admin-panel-head > *,
+.event-block-head > *,
+.organizer-strip > * {
+  min-width: 0;
+}
+
+.detail-copy,
+.event-trail-name,
+.booking-facts dd,
+.map-meta strong,
+.organizer-strip a,
+.organizer-strip > span,
+.sidebar-user span,
+.sidebar-user small {
+  overflow-wrap: anywhere;
+}
+
+.facebook-profile-name {
+  flex: 1 1 0;
+}
+
+@media (min-width: 681px) and (max-width: 1050px) {
+  /* Preserve the two-panel auth experience on tablets. */
+  .auth-shell {
+    grid-template-columns: minmax(0, 1fr) minmax(260px, 0.78fr);
+  }
+
+  .auth-form-side {
+    padding: 56px clamp(32px, 6vw, 64px);
+  }
+
+  .auth-photo {
+    min-height: 100svh;
+    padding: 72px 9%;
+  }
+
+  .auth-photo .logo {
+    font-size: 42px;
+  }
+
+  .auth-photo p {
+    font-size: 19px;
+  }
+}
+
+@media (max-width: 680px) {
+  .backend-warning {
+    gap: 8px 12px;
+    left: 12px;
+    padding: 10px 12px;
+    right: 12px;
+    top: 84px;
+  }
+
+  .backend-warning strong,
+  .backend-warning p {
+    font-size: 13px;
+  }
+
+  .toast-viewport {
+    bottom: 14px;
+    left: 14px;
+    max-width: none;
+    right: 14px;
+    width: auto;
+  }
+
+  .site-header {
+    gap: 12px;
+  }
+
+  .site-header .logo {
+    font-size: 29px;
+  }
+
+  .top-nav.open,
+  .header-actions.open {
+    min-width: 0;
+  }
+
+  .detail-hero {
+    align-items: flex-start;
+    gap: 24px;
+    min-height: 600px;
+    padding-bottom: 30px;
+  }
+
+  .detail-hero .hero-light,
+  .event-detail-hero .hero-light {
+    font-size: clamp(30px, 10vw, 40px);
+  }
+
+  .hero-buttons {
+    align-items: stretch;
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .hero-buttons .button {
+    min-height: 46px;
+    width: 100%;
+  }
+
+  .event-detail-hero {
+    min-height: 500px;
+    padding-bottom: 34px;
+  }
+
+  .event-hero-meta {
+    gap: 8px 12px;
+    letter-spacing: 0.08em;
+  }
+
+  .event-hero-meta span + span::before {
+    content: '';
+  }
+
+  .events-head {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 20px;
+    margin-bottom: 32px;
+    padding-bottom: 26px;
+  }
+
+  .events-head .button {
+    align-self: stretch;
+    min-height: 46px;
+  }
+
+  .featured-event {
+    grid-column: auto;
+  }
+
+  .featured-event div {
+    padding: 22px;
+  }
+
+  .lead-card {
+    min-height: 240px;
+    padding: 26px 20px;
+  }
+
+  .lead-card a {
+    display: inline-flex;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    text-align: center;
+  }
+
+  .map-meta {
+    align-items: stretch;
+    gap: 16px;
+    padding: 16px;
+  }
+
+  .map-meta-link {
+    margin-left: 0;
+    width: fit-content;
+  }
+
+  .gallery-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .event-block-head {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .event-block-head .button {
+    width: 100%;
+  }
+
+  .event-facts {
+    gap: 18px;
+    grid-template-columns: 1fr;
+  }
+
+  .organizer-strip {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .organizer-strip p {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .booking-facts div {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .booking-facts dd {
+    text-align: left;
+  }
+
+  .join-panel .button {
+    min-height: 48px;
+  }
+
+  /* Phone auth is deliberately form-first. The decorative panel is retained
+     for tablet and desktop, while the document can scroll naturally here. */
+  .auth-shell {
+    display: block;
+    height: auto;
+    min-height: 100svh;
+    overflow: visible;
+  }
+
+  .auth-shell .auth-photo {
+    display: none;
+  }
+
+  .auth-shell .auth-form-side {
+    justify-content: flex-start;
+    min-height: 100svh;
+    overflow: visible;
+    padding: 102px 22px 32px;
+  }
+
+  .auth-form {
+    gap: 18px;
+    max-width: none;
+    width: 100%;
+  }
+
+  .auth-heading span,
+  .auth-heading strong {
+    font-size: clamp(34px, 11vw, 46px);
+  }
+
+  .auth-meta {
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    margin-top: 28px;
+  }
+
+  .auth-modal-backdrop {
+    align-items: flex-start;
+    overflow-y: auto;
+    padding: 12px;
+  }
+
+  .auth-modal-backdrop .auth-form-side {
+    max-height: none;
+    min-height: 0;
+    padding: 54px 22px 28px;
+  }
+
+  .facebook-profile-shell {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .facebook-cover {
+    min-height: 220px;
+    padding: 14px;
+  }
+
+  .cover-action {
+    right: 14px;
+    top: 14px;
+  }
+
+  .facebook-profile-bar {
+    margin-left: 12px;
+    margin-right: 12px;
+    padding: 0 14px 16px;
+  }
+
+  .facebook-identity-row {
+    align-items: start;
+    display: grid;
+    gap: 14px;
+    grid-template-columns: 102px minmax(0, 1fr);
+  }
+
+  .facebook-avatar-wrap {
+    flex-basis: 102px;
+    margin-top: -50px;
+  }
+
+  .facebook-avatar-wrap img,
+  .facebook-avatar-wrap .initial-avatar {
+    height: 102px;
+    width: 102px;
+  }
+
+  .avatar-camera {
+    bottom: 2px;
+    height: 36px;
+    right: -2px;
+    width: 36px;
+  }
+
+  .facebook-profile-name {
+    padding-top: 16px;
+  }
+
+  .facebook-profile-name h1 {
+    font-size: clamp(28px, 10vw, 38px);
+    margin-top: 10px;
+  }
+
+  .facebook-profile-name p {
+    font-size: 10px;
+    letter-spacing: 0.07em;
+    line-height: 1.5;
+    text-transform: none;
+  }
+
+  .profile-banner-stat {
+    min-height: 82px;
+    padding: 16px;
+  }
+
+  .profile-banner-stat span {
+    overflow-wrap: anywhere;
+  }
+
+  .facebook-profile-actions,
+  .facebook-profile-actions .button {
+    width: 100%;
+  }
+
+  .profile-edit-modal {
+    max-height: calc(100svh - 24px);
+    padding: 20px;
+  }
+
+  .profile-edit-head h2 {
+    font-size: 27px;
+  }
+
+  .trail-modal {
+    width: calc(100vw - 24px);
+  }
+
+  .trail-modal .profile-edit-head {
+    margin: -20px -20px 0;
+    padding: 20px 20px 14px;
+    top: -20px;
+  }
+
+  .trail-modal-actions,
+  .trail-map-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .trail-modal-actions .button,
+  .trail-map-cancel,
+  .trail-pin-indicator {
+    justify-content: center;
+    width: 100%;
+  }
+
+  .trail-gallery-editor {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-compact-head {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .system-status.compact {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .admin-filter-bar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .admin-filter-bar input,
+  .admin-filter-bar select,
+  .admin-filter-bar-action,
+  .admin-filter-bar-action .button {
+    width: 100%;
+  }
+
+  .admin-option-group {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  .admin-option-group button {
+    flex: 0 0 auto;
+    min-height: 42px;
+  }
+
+  .admin-filter-bar > .button {
+    min-height: 46px;
+    width: 100%;
+  }
+
+  .admin-pagination {
+    justify-content: space-between;
+  }
+
+  /* Keep dense portal data comparable without widening the document. */
+  .organizer-events-card,
+  .organizer-participants-card {
+    overflow-x: auto;
+  }
+
+  .organizer-data-table,
+  .organizer-participants-card .data-table {
+    min-width: 720px;
+  }
+
+  .organizer-data-table .table-head,
+  .organizer-data-table .organizer-row {
+    grid-template-columns: 2fr 1fr 1fr 1fr 120px;
+  }
+
+  .organizer-participants-card .participant-row {
+    grid-template-columns: 1fr 1.2fr auto;
+  }
+
+  .organizer-table-head {
+    min-width: 0;
+  }
+
+  .organizer-table-head .button {
+    flex: 0 1 auto;
+  }
+
+  .organizer-event-form {
+    padding: 18px;
+  }
+
+  .organizer-event-form .button {
+    min-height: 48px;
     width: 100%;
   }
 }
