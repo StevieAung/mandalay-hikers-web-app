@@ -256,7 +256,10 @@ const translations = {
   'event.join': ['Request to Join', 'ပါဝင်ရန် တောင်းဆိုသည်'],
   'event.joined': ['Joined', 'ပါဝင်ပြီး'],
   'event.pending': ['Request sent — tap to cancel', 'တောင်းဆိုပြီး — ပယ်ဖျက်ရန် နှိပ်ပါ'],
-  'event.rejected': ['Request declined — tap to reapply', 'ငြင်းပယ်ခံရသည် — ပြန်လျှောက်ရန် နှိပ်ပါ'],
+  'event.rejected': [
+    'Request declined — tap to reapply',
+    'ငြင်းပယ်ခံရသည် — ပြန်လျှောက်ရန် နှိပ်ပါ',
+  ],
   'event.trail': ['Linked Trail', 'ဆက်စပ် လမ်းကြောင်း'],
   'event.viewTrail': ['View trail', 'လမ်းကြောင်း ကြည့်ရန်'],
   'event.noTrail': [
@@ -304,15 +307,9 @@ const translations = {
   ],
   'dashboard.upcomingTreks': ['Upcoming Treks', 'လာမည့် ခရီးစဉ်များ'],
   'dashboard.scheduled': ['Scheduled', 'စီစဉ်ထားသည်'],
-  'dashboard.loadingEvents': [
-    'Loading joined events...',
-    'ပါဝင်ထားသော ခရီးစဉ်များ ဖတ်နေသည်...',
-  ],
+  'dashboard.loadingEvents': ['Loading joined events...', 'ပါဝင်ထားသော ခရီးစဉ်များ ဖတ်နေသည်...'],
   'dashboard.dateLabel': ['Date', 'ရက်စွဲ'],
-  'dashboard.noTreksOnDay': [
-    'No treks on the selected day.',
-    'ရွေးထားသောရက်တွင် ခရီးစဉ် မရှိပါ။',
-  ],
+  'dashboard.noTreksOnDay': ['No treks on the selected day.', 'ရွေးထားသောရက်တွင် ခရီးစဉ် မရှိပါ။'],
   'dashboard.noJoinedTreks': [
     'You have not joined any upcoming treks yet.',
     'သင် လာမည့်ခရီးစဉ်များတွင် မပါဝင်ရသေးပါ။',
@@ -320,10 +317,7 @@ const translations = {
   'dashboard.browseEvents': ['Browse events', 'ခရီးစဉ်များ ရှာဖွေရန်'],
   'dashboard.savedTrails': ['Saved Trails', 'သိမ်းထားသော လမ်းကြောင်းများ'],
   'dashboard.bookmarked': ['Bookmarked', 'မှတ်သားထားသည်'],
-  'dashboard.loadingSaved': [
-    'Loading saved trails...',
-    'သိမ်းထားသော လမ်းကြောင်းများ ဖတ်နေသည်...',
-  ],
+  'dashboard.loadingSaved': ['Loading saved trails...', 'သိမ်းထားသော လမ်းကြောင်းများ ဖတ်နေသည်...'],
   'dashboard.noSavedTrails': ['No saved trails yet.', 'သိမ်းထားသော လမ်းကြောင်း မရှိသေးပါ။'],
   'dashboard.findTrail': ['Find a trail', 'လမ်းကြောင်း ရှာရန်'],
   'dashboard.trekNow': ['Trek Now', 'ယခုသွားရန်'],
@@ -335,6 +329,37 @@ const translations = {
     'သင် အသိုင်းအဝိုင်းပို့စ် မမျှဝေရသေးပါ။',
   ],
   'dashboard.postUpdate': ['Post an update', 'အပ်ဒိတ်တစ်ခု တင်ရန်'],
+  'weather.title': ['Trail Weather', 'လမ်းကြောင်း မိုးလေဝသ'],
+  'weather.current': ['Current conditions', 'လက်ရှိ အခြေအနေ'],
+  'weather.forecast': ['3-day forecast', '၃ ရက် မိုးလေဝသ ခန့်မှန်းချက်'],
+  'weather.loading': ['Loading trail weather', 'လမ်းကြောင်း မိုးလေဝသ ရယူနေသည်'],
+  'weather.loadingDetail': [
+    'Checking conditions at the trailhead.',
+    'လမ်းကြောင်းအစ မိုးလေဝသကို စစ်ဆေးနေသည်။',
+  ],
+  'weather.unavailableTitle': ['Weather unavailable', 'မိုးလေဝသ မရရှိနိုင်ပါ'],
+  'weather.unavailable': [
+    'Current conditions could not be loaded. Please check again later.',
+    'လက်ရှိ မိုးလေဝသကို ရယူ၍မရပါ။ နောက်မှ ထပ်စစ်ဆေးပါ။',
+  ],
+  'weather.notMapped': [
+    'Weather will appear after an admin pins this trailhead on the map.',
+    'စီမံခန့်ခွဲသူက လမ်းကြောင်းအစကို မြေပုံတွင် သတ်မှတ်ပြီးနောက် မိုးလေဝသကို မြင်နိုင်မည်။',
+  ],
+  'weather.accessibilityLabel': [
+    'Trail weather conditions and forecast',
+    'လမ်းကြောင်း မိုးလေဝသ အခြေအနေနှင့် ခန့်မှန်းချက်',
+  ],
+  'weather.feelsLike': ['Feels like', 'ခံစားရသည့် အပူချိန်'],
+  'weather.wind': ['Wind', 'လေတိုက်နှုန်း'],
+  'weather.rainChance': ['rain chance', 'မိုးရွာနိုင်ခြေ'],
+  'weather.clear': ['Clear', 'ကြည်လင်'],
+  'weather.cloudy': ['Cloudy', 'တိမ်ထူ'],
+  'weather.drizzle': ['Drizzle', 'မိုးဖွဲ'],
+  'weather.fog': ['Fog', 'မြူ'],
+  'weather.rain': ['Rain', 'မိုး'],
+  'weather.snow': ['Snow', 'နှင်း'],
+  'weather.thunderstorm': ['Thunderstorm', 'မိုးကြိုးမုန်တိုင်း'],
 } as const
 
 export type TranslationKey = keyof typeof translations

@@ -3,6 +3,7 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { DividerTitle, Stat } from '../components/Cards'
 import { Footer } from '../components/Footer'
 import { TrailMap } from '../components/TrailMap'
+import { TrailWeatherPanel } from '../components/TrailWeatherPanel'
 import { useAuth } from '../context/useAuth'
 import { useLocale } from '../context/useLocale'
 import { useToast } from '../context/useToast'
@@ -362,7 +363,9 @@ export default function TrailDetailPage() {
           <span className={`badge ${trail.difficulty.toLowerCase()}`}>
             {t('detail.difficulty')}: {trail.difficulty}
           </span>
-          <span className={`status ${trail.status || 'open'}`}>{trailStatusLabel(trail.status)}</span>
+          <span className={`status ${trail.status || 'open'}`}>
+            {trailStatusLabel(trail.status)}
+          </span>
           <p className="hero-light">{trail.location}</p>
           <h1>{trail.name}</h1>
         </div>
@@ -450,6 +453,8 @@ export default function TrailDetailPage() {
         </aside>
       </section>
       <section className="detail-map-band">
+        <DividerTitle title={t('weather.title')} />
+        <TrailWeatherPanel coordinates={coordinates} />
         <DividerTitle title={t('detail.location')} />
         {coordinates ? (
           <div className="map-frame">

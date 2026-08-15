@@ -1046,6 +1046,137 @@ textarea {
   padding: 0 46px 88px;
 }
 
+.trail-weather-panel {
+  background: var(--surface);
+  border: 1px solid var(--fog);
+  display: grid;
+  grid-template-columns: minmax(300px, 1fr) minmax(0, 1.5fr);
+}
+
+.trail-weather-current {
+  background: var(--surface-low);
+  display: grid;
+  gap: 20px;
+  padding: 24px;
+}
+
+.weather-eyebrow,
+.weather-current-facts dt,
+.weather-day > span,
+.weather-day small {
+  color: var(--outline);
+  display: block;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.weather-condition {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.weather-condition .material-symbols-outlined {
+  color: var(--burnt);
+  font-size: 30px;
+}
+
+.weather-condition strong {
+  color: var(--forest);
+  font-family: var(--display);
+  font-size: 28px;
+  font-weight: 400;
+}
+
+.weather-temperature {
+  color: var(--forest);
+  font-family: var(--display);
+  font-size: 54px;
+  font-weight: 300;
+  line-height: 0.9;
+}
+
+.weather-current-facts {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 0;
+}
+
+.weather-current-facts div {
+  min-width: 0;
+}
+
+.weather-current-facts dd {
+  color: var(--forest);
+  font-family: var(--mono);
+  font-size: 13px;
+  margin: 7px 0 0;
+  overflow-wrap: anywhere;
+}
+
+.trail-weather-forecast {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.weather-day {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  padding: 24px;
+}
+
+.weather-day + .weather-day {
+  border-left: 1px solid var(--fog);
+}
+
+.weather-day .material-symbols-outlined {
+  color: var(--burnt);
+  font-size: 28px;
+}
+
+.weather-day strong {
+  color: var(--forest);
+  font-family: var(--display);
+  font-size: 26px;
+  font-weight: 400;
+  white-space: nowrap;
+}
+
+.weather-day small {
+  line-height: 1.45;
+}
+
+.trail-weather-state {
+  align-items: center;
+  gap: 16px;
+  grid-template-columns: auto 1fr;
+  min-height: 118px;
+  padding: 22px;
+}
+
+.trail-weather-state > .material-symbols-outlined {
+  color: var(--stone);
+  font-size: 28px;
+}
+
+.trail-weather-state strong {
+  color: var(--forest);
+  display: block;
+  font-family: var(--display);
+  font-size: 22px;
+  font-weight: 400;
+}
+
+.trail-weather-state p {
+  color: var(--stone);
+  margin: 4px 0 0;
+}
+
 /* The gallery is a sidebar next to a much longer main column, so pin it while
    the reviews scroll past. */
 .detail-side {
@@ -5199,6 +5330,14 @@ a.feed-time:hover {
   .auth-photo {
     min-height: 620px;
   }
+
+  .trail-weather-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .trail-weather-forecast {
+    border-top: 1px solid var(--fog);
+  }
 }
 
 @media (max-width: 680px) {
@@ -5262,6 +5401,21 @@ a.feed-time:hover {
   .social-row,
   .form-grid {
     grid-template-columns: 1fr;
+  }
+
+  .trail-weather-current,
+  .weather-day {
+    padding: 18px;
+  }
+
+  .weather-current-facts,
+  .trail-weather-forecast {
+    grid-template-columns: 1fr;
+  }
+
+  .weather-day + .weather-day {
+    border-left: 0;
+    border-top: 1px solid var(--fog);
   }
 
   .rating-panel,
